@@ -16,10 +16,7 @@ export function Navbar() {
                         </Link>
                     )}
                     <Link to="/" className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                            <Calculator className="text-white" size={20} />
-                        </div>
-                        <span className="font-bold text-xl text-slate-800 tracking-tight">Azur<span className="text-blue-600">Calc</span></span>
+                        <img src="https://www.azur.com.ec/almacen/logosreseller/logo.svg" alt="Azur" className="h-10" />
                     </Link>
                 </div>
 

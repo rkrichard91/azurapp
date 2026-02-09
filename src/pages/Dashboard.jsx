@@ -11,8 +11,8 @@ export default function Dashboard() {
             desc: "Cotizador de Planes y Firmas Electrónicas.",
             icon: ShoppingCart,
             color: "bg-emerald-500",
-            link: "/new-sale", // Futuro
-            active: false
+            link: "/new-sale",
+            active: true
         },
         {
             title: "Integraciones",
@@ -27,8 +27,8 @@ export default function Dashboard() {
             desc: "Cálculo de prorrateo para upgrades.",
             icon: RefreshCw,
             color: "bg-amber-500",
-            link: "/upgrade", // Futuro
-            active: false
+            link: "/plan-change",
+            active: true
         }
     ];
 

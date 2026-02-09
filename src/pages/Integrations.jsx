@@ -4,7 +4,7 @@ import { LayoutContainer } from '../components/layout/LayoutContainer';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Select } from '../components/ui/Select';
-import { CheckCircle2, AlertCircle, Copy } from 'lucide-react';
+import { CheckCircle2, AlertCircle, Copy, FileText } from 'lucide-react';
 
 export default function IntegrationsCalculator() {
     const [type, setType] = useState('API');
