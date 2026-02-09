@@ -90,3 +90,4 @@ El proyecto incluye un script SQL completo para generar la estructura de tablas 
   ├── /services      # Lógica de conexión con Supabase
   └── App.jsx        # Configuración de Rutas
 ```
+Proyecto Creado para Paola ojala y me regale un encebollado XD
