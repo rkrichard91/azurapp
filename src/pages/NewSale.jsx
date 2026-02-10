@@ -151,6 +151,16 @@ export default function NewSale() {
         alert('Cotización Detallada copiada al portapapeles');
     };
 
+    const handleClearCart = () => {
+        if (window.confirm('¿Estás seguro de que deseas limpiar toda la cotización?')) {
+            setCartItems([]);
+            setSelectedProduct(null);
+            setSelectedPriceId(null);
+            setQuantity(1);
+            setIsRenewal(false);
+        }
+    };
+
     return (
         <div className="max-w-7xl mx-auto p-6 font-sans h-[calc(100vh-100px)]">
             <div className="mb-6 flex items-center gap-4">
@@ -365,6 +375,7 @@ export default function NewSale() {
                             onRemove={removeFromCart}
                             onCopySummarized={handleCopySummarized}
                             onCopyDetailed={handleCopyDetailed}
+                            onClear={handleClearCart}
                         />
                         {cartItems.length === 0 && (
                             <div className="mt-4 p-4 bg-blue-50 text-blue-700 text-sm rounded-xl border border-blue-100 flex gap-2">

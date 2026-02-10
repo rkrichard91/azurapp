@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function SummaryCard({ items = [], onRemove, onCopySummarized, onCopyDetailed }) {
+export default function SummaryCard({ items = [], onRemove, onCopySummarized, onCopyDetailed, onClear }) {
     if (!items || items.length === 0) return null;
 
     // Calcular totales
@@ -72,8 +72,16 @@ export default function SummaryCard({ items = [], onRemove, onCopySummarized, on
                     >
                         <span>📑</span> Copiar Detallado
                     </button>
+                    {onClear && items.length > 0 && (
+                        <button
+                            onClick={onClear}
+                            className="w-full text-red-500 border border-red-200 font-semibold py-3 rounded-lg hover:bg-red-50 transition-colors shadow-sm flex items-center justify-center gap-2 mt-2"
+                        >
+                            <span>🗑️</span> Limpiar Todo
+                        </button>
+                    )}
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
