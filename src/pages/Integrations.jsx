@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { calculateIntegrationQuote } from '../services/integrationService';
-import { LayoutContainer } from '../components/layout/LayoutContainer';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Select } from '../components/ui/Select';
@@ -9,6 +8,7 @@ import { CheckCircle2, AlertCircle, Copy, FileText } from 'lucide-react';
 export default function IntegrationsCalculator() {
     const [type, setType] = useState('API');
     const [quantity, setQuantity] = useState(5000);
+    const [cycle, setCycle] = useState('ANNUAL'); // Nuevo estado para ciclo
     const [quote, setQuote] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -36,12 +36,55 @@ export default function IntegrationsCalculator() {
         { value: 200000, label: '200,000 Comprobantes Adicionales' }
     ];
 
+    const optionsUNLIMITED = [
+        { value: 500, label: '500 Comprobantes Extra' },
+        { value: 1000, label: '1,000 Comprobantes Extra' },
+        { value: 5000, label: '5,000 Comprobantes Extra' },
+        { value: 10000, label: '10,000 Comprobantes Extra' },
+        { value: 20000, label: '20,000 Comprobantes Extra' },
+        { value: 30000, label: '30,000 Comprobantes Extra' },
+        { value: 40000, label: '40,000 Comprobantes Extra' },
+        { value: 50000, label: '50,000 Comprobantes Extra' },
+        { value: 100000, label: '100,000 Comprobantes Extra' },
+        { value: 150000, label: '150,000 Comprobantes Extra' },
+        { value: 180000, label: '180,000 Comprobantes Extra' },
+        { value: 200000, label: '200,000 Comprobantes Extra' },
+        { value: 300000, label: '300,000 Comprobantes Extra' },
+        { value: 500000, label: '500,000 Comprobantes Extra' }
+    ];
+
+    const optionsACCOUNTING = [
+        { value: 125, label: '125 Docs Extra / mes' },
+        { value: 250, label: '250 Docs Extra / mes' },
+        { value: 500, label: '500 Docs Extra / mes' },
+        { value: 1000, label: '1,000 Docs Extra / mes' },
+        { value: 1500, label: '1,500 Docs Extra / mes' },
+        { value: 2000, label: '2,000 Docs Extra / mes' },
+        { value: 2500, label: '2,500 Docs Extra / mes' },
+        { value: 3000, label: '3,000 Docs Extra / mes' },
+        { value: 5000, label: '5,000 Docs Extra / mes' },
+        { value: 10000, label: '10,000 Docs Extra / mes' },
+        { value: 20000, label: '20,000 Docs Extra / mes' },
+        { value: 30000, label: '30,000 Docs Extra / mes' },
+        { value: 50000, label: '50,000 Docs Extra / mes' }
+    ];
+
+    const getOptions = () => {
+        switch (type) {
+            case 'API': return optionsAPI;
+            case 'WEB': return optionsWEB;
+            case 'UNLIMITED': return optionsUNLIMITED;
+            case 'ACCOUNTING': return optionsACCOUNTING;
+            default: return optionsAPI;
+        }
+    };
+
     useEffect(() => {
         async function runCalc() {
             setLoading(true);
             setError(null);
             try {
-                const result = await calculateIntegrationQuote(type, quantity);
+                const result = await calculateIntegrationQuote(type, quantity, cycle);
                 if (!result) throw new Error("No se pudo calcular la cotización");
                 setQuote(result);
             } catch (err) {
@@ -53,29 +96,40 @@ export default function IntegrationsCalculator() {
             }
         }
         runCalc();
-    }, [type, quantity]);
+    }, [type, quantity, cycle]);
 
     const copyToClipboard = () => {
         if (!quote) return;
+
+        // Clean item names (remove 'Reseller')
+        const breakdownText = quote.breakdown.map(b => {
+            const cleanItem = b.item.replace(/reseller/gi, '').trim().replace(/\s{2,}/g, ' ');
+            return `${cleanItem}: $${b.price}`;
+        }).join('\n');
+
         const text = `
-Cotización Integración ${type}:
+Cotización ${quote.summary.plan_name}:
 -----------------------------
-Plan Base: $100.00
-${quote.breakdown[1].item}: $${quote.breakdown[1].price}
+${breakdownText}
 -----------------------------
 Subtotal: $${quote.summary.subtotal}
 IVA (15%): $${quote.summary.iva}
-TOTAL ANUAL: $${quote.summary.total}
+TOTAL: $${quote.summary.total}
+
+Desglose de Capacidad:
+Base: ${quote.summary.base_docs.toLocaleString()}
+Adicionales: ${quote.summary.additional_docs.toLocaleString()}
+Total: ${quote.summary.total_docs.toLocaleString()} Docs
     `.trim();
         navigator.clipboard.writeText(text);
         alert("Resumen copiado al portapapeles");
     };
 
     return (
-        <LayoutContainer>
+        <>
             <div className="mb-8">
-                <h1 className="text-3xl font-bold text-slate-900">Calculadora de Integraciones</h1>
-                <p className="text-slate-500 mt-2">Cotiza paquetes de comprobantes para API REST o Uso Web.</p>
+                <h1 className="text-3xl font-bold text-slate-900">Calculadora de Adicionales</h1>
+                <p className="text-slate-500 mt-2">Cotiza paquetes de comprobantes para API REST, Uso Web y Contable.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 font-sans">
@@ -86,38 +140,75 @@ TOTAL ANUAL: $${quote.summary.total}
 
                     <div className="mb-6">
                         <label className="block text-sm font-medium text-slate-500 mb-3">Tipo de Servicio</label>
-                        <div className="flex bg-slate-100 p-1.5 rounded-xl">
+                        <div className="grid grid-cols-2 gap-2 bg-slate-100 p-1.5 rounded-xl">
                             <button
                                 onClick={() => { setType('API'); setQuantity(5000); }}
-                                className={`flex-1 py-2.5 rounded-lg font-semibold text-sm transition-all ${type === 'API' ? 'bg-white shadow text-blue-600' : 'text-slate-500 hover:text-slate-700'}`}
+                                className={`py-2 rounded-lg font-semibold text-xs transition-all ${type === 'API' ? 'bg-white shadow text-blue-600' : 'text-slate-500 hover:text-slate-700'}`}
                             >
-                                API REST
+                                INTEGRACIÓN API REST
                             </button>
                             <button
                                 onClick={() => { setType('WEB'); setQuantity(500); }}
-                                className={`flex-1 py-2.5 rounded-lg font-semibold text-sm transition-all ${type === 'WEB' ? 'bg-white shadow text-blue-600' : 'text-slate-500 hover:text-slate-700'}`}
+                                className={`py-2 rounded-lg font-semibold text-xs transition-all ${type === 'WEB' ? 'bg-white shadow text-blue-600' : 'text-slate-500 hover:text-slate-700'}`}
                             >
-                                USO WEB
+                                INTEGRACIÓN USO WEB
+                            </button>
+                            <button
+                                onClick={() => { setType('UNLIMITED'); setQuantity(500); }}
+                                className={`py-2 rounded-lg font-semibold text-xs transition-all ${type === 'UNLIMITED' ? 'bg-white shadow text-blue-600' : 'text-slate-500 hover:text-slate-700'}`}
+                            >
+                                ILIMITADO
+                            </button>
+                            <button
+                                onClick={() => { setType('ACCOUNTING'); setQuantity(125); }}
+                                className={`py-2 rounded-lg font-semibold text-xs transition-all ${type === 'ACCOUNTING' ? 'bg-white shadow text-blue-600' : 'text-slate-500 hover:text-slate-700'}`}
+                            >
+                                CONTABLE
                             </button>
                         </div>
                         <p className="text-xs text-slate-400 mt-2 ml-1">
-                            {type === 'API' ? 'Para sistemas externos consumiendo la API de Azur.' : 'Para uso directo en la plataforma web de Azur.'}
+                            {type === 'API' && 'Para sistemas externos consumiendo la API de Azur.'}
+                            {type === 'WEB' && 'Para uso directo en la plataforma web de Azur.'}
+                            {type === 'UNLIMITED' && 'Plan masivo con facturación anual.'}
+                            {type === 'ACCOUNTING' && 'Plan especial para contadores y estudios.'}
                         </p>
                     </div>
+
+                    {type === 'ACCOUNTING' && (
+                        <div className="mb-6 animate-in fade-in slide-in-from-top-2">
+                            <label className="block text-sm font-medium text-slate-500 mb-3">Ciclo de Facturación</label>
+                            <div className="grid grid-cols-4 gap-2 bg-slate-100 p-1.5 rounded-xl">
+                                {['MONTHLY', 'QUARTERLY', 'SEMIANNUAL', 'ANNUAL'].map((c) => (
+                                    <button
+                                        key={c}
+                                        onClick={() => setCycle(c)}
+                                        className={`py-2 rounded-lg font-semibold text-[10px] transition-all ${cycle === c ? 'bg-white shadow text-blue-600' : 'text-slate-500 hover:text-slate-700'}`}
+                                    >
+                                        {c === 'MONTHLY' && 'MENSUAL'}
+                                        {c === 'QUARTERLY' && 'TRIMESTRAL'}
+                                        {c === 'SEMIANNUAL' && 'SEMESTRAL'}
+                                        {c === 'ANNUAL' && 'ANUAL'}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     <div className="mb-8">
                         <Select
                             label="Cantidad Adicional Requerida"
                             value={quantity}
                             onChange={(e) => setQuantity(parseInt(e.target.value))}
-                            options={type === 'API' ? optionsAPI : optionsWEB}
+                            options={getOptions()}
                         />
                     </div>
 
                     <div className="p-4 bg-blue-50 rounded-xl border border-blue-100 flex gap-3">
                         <AlertCircle className="text-blue-600 flex-shrink-0" size={20} />
                         <p className="text-sm text-blue-800 leading-relaxed">
-                            El <strong>Plan Base de Integración ($100)</strong> es obligatorio para habilitar el servicio y ya incluye <strong>2,000 comprobantes</strong> anuales.
+                            {type === 'UNLIMITED' && 'El plan ilimitado incluye 15,000 comprobantes base anuales.'}
+                            {type === 'ACCOUNTING' && 'El plan contable incluye 1,250 comprobantes base por mes.'}
+                            {(type === 'API' || type === 'WEB') && 'El Plan Base de Integración ($100) es obligatorio e incluye 2,000 comprobantes anuales.'}
                         </p>
                     </div>
                 </Card>
@@ -192,6 +283,6 @@ TOTAL ANUAL: $${quote.summary.total}
                     )}
                 </Card>
             </div>
-        </LayoutContainer>
+        </>
     );
 }

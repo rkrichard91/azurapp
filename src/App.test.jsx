@@ -1,5 +1,5 @@
-import { render, screen } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { render } from '@testing-library/react';
+import { describe, it, vi } from 'vitest';
 import App from './App';
 
 // Mock supabase client to avoid initialization errors

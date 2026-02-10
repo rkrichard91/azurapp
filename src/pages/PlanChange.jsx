@@ -1,12 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Check, X, Copy, Info, AlertTriangle } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { fetchProductsByChannel } from '../services/pricingService';
 
 // --- DATA ---
 const IVA_RATE = 0.15;
-
-import { fetchProductsByChannel } from '../services/pricingService';
-
 
 const FEATURE_ORDER = [
     "Comprobantes año", "Usuarios", "Puntos de Emisión", "Empresas", "Establecimientos",
@@ -14,6 +12,10 @@ const FEATURE_ORDER = [
     "Compras", "Retenciones", "Guías de Remisión", "Liquidación Compras", "Cuentas por Cobrar",
     "Cuentas por Pagar", "Notas de Débito", "Generación ATS"
 ];
+
+const FEATURE_DISPLAY_NAMES = {
+    "Comprobantes año": "Comprobantes al año",
+};
 
 // Helper Functions
 const formatCurrency = (amount) => `$${amount.toFixed(2)}`;
@@ -27,7 +29,7 @@ const formatDate = (date) => {
 };
 
 export default function PlanChange() {
-    const { canalSeleccionado, setCanalSeleccionado } = useApp();
+    const { canalSeleccionado } = useApp();
 
     // Data State
     const [plansData, setPlansData] = useState({});
@@ -82,6 +84,7 @@ export default function PlanChange() {
             }
         }
         loadPlans();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [canalSeleccionado]);
 
     const planNames = Object.keys(plansData);
@@ -143,7 +146,7 @@ export default function PlanChange() {
             isDowngrade,
             isContractActive
         };
-    }, [currentPlanName, newPlanName, startDate, endDate]);
+    }, [currentPlanName, newPlanName, startDate, endDate, plansData]);
 
     // Message Generation
     const generatedMessage = useMemo(() => {
@@ -228,14 +231,16 @@ export default function PlanChange() {
             const oldValue = currentFeatures[feature];
             const newValue = newFeatures[feature];
 
+            const displayName = FEATURE_DISPLAY_NAMES[feature] || feature;
+
             if (JSON.stringify(oldValue) === JSON.stringify(newValue)) return;
 
             if (typeof oldValue === 'boolean' || typeof newValue === 'boolean') {
                 const normOld = oldValue === undefined ? false : oldValue;
                 const normNew = newValue === undefined ? false : newValue;
 
-                if (normOld === false && normNew === true) gains.push(`✅ Ahora incluye: ${feature}`);
-                else if (normOld === true && normNew === false) losses.push(`❌ Ya no incluye: ${feature}`);
+                if (normOld === false && normNew === true) gains.push(`✅ Ahora incluye: ${displayName}`);
+                else if (normOld === true && normNew === false) losses.push(`❌ Ya no incluye: ${displayName}`);
                 return;
             }
 
@@ -249,17 +254,17 @@ export default function PlanChange() {
             if (oldIsNumeric && newIsNumeric) {
                 const diff = newValNum - oldValNum;
                 if (diff > 0) {
-                    gains.push(`✅ ${diff.toLocaleString('es-EC')} ${feature} más (ahora tendrá ${newValNum.toLocaleString('es-EC')})`);
+                    gains.push(`✅ ${diff.toLocaleString('es-EC')} ${displayName} más (ahora tendrá ${newValNum.toLocaleString('es-EC')})`);
                 } else if (diff < 0) {
-                    losses.push(`❌ ${Math.abs(diff).toLocaleString('es-EC')} ${feature} menos (ahora tendrá ${newValNum.toLocaleString('es-EC')} en lugar de ${oldValNum.toLocaleString('es-EC')})`);
+                    losses.push(`❌ ${Math.abs(diff).toLocaleString('es-EC')} ${displayName} menos (ahora tendrá ${newValNum.toLocaleString('es-EC')} en lugar de ${oldValNum.toLocaleString('es-EC')})`);
                 }
             } else if ((oldIsUnlimited || !oldIsNumeric) && newIsNumeric) {
-                losses.push(`❌ Ya no tendrá ${feature} ${String(oldValue)} (ahora tendrá ${newValNum.toLocaleString('es-EC')})`);
+                losses.push(`❌ Ya no tendrá ${displayName} ${String(oldValue)} (ahora tendrá ${newValNum.toLocaleString('es-EC')})`);
             } else if (oldIsNumeric && (newIsUnlimited || !newIsNumeric)) {
-                gains.push(`✅ Ahora tendrá ${feature} ${String(newValue)} (antes tenía ${oldValNum.toLocaleString('es-EC')})`);
+                gains.push(`✅ Ahora tendrá ${displayName} ${String(newValue)} (antes tenía ${oldValNum.toLocaleString('es-EC')})`);
             } else { // both are strings
                 if (oldValue !== newValue) {
-                    gains.push(`✅ ${feature} cambia de ${oldValue} a ${newValue}`);
+                    gains.push(`✅ ${displayName} cambia de ${oldValue} a ${newValue}`);
                 }
             }
         });
@@ -276,7 +281,7 @@ export default function PlanChange() {
 
         return message.trim();
 
-    }, [calculation, ranOut, currentPlanName, newPlanName, startDate, endDate]);
+    }, [calculation, ranOut, currentPlanName, newPlanName, startDate, endDate, plansData]);
 
     const handleCopy = () => {
         navigator.clipboard.writeText(generatedMessage);
@@ -462,6 +467,7 @@ export default function PlanChange() {
                                         {FEATURE_ORDER.map(feature => {
                                             const currentVal = plansData[currentPlanName]?.features?.[feature];
                                             const newVal = plansData[newPlanName]?.features?.[feature];
+                                            const displayName = FEATURE_DISPLAY_NAMES[feature] || feature;
 
                                             // Normalización para comparación
                                             const normCurrent = currentVal === undefined ? false : currentVal;
@@ -478,7 +484,7 @@ export default function PlanChange() {
 
                                             return (
                                                 <tr key={feature} className={`hover:bg-slate-50 transition-colors ${isDiff ? 'bg-blue-50/40' : ''}`}>
-                                                    <td className="p-4 text-slate-600 font-medium">{feature}</td>
+                                                    <td className="p-4 text-slate-600 font-medium">{displayName}</td>
                                                     <td className="p-4 text-center border-l border-slate-100">{renderVal(normCurrent)}</td>
                                                     <td className="p-4 text-center border-l border-slate-100">{renderVal(normNew)}</td>
                                                 </tr>
@@ -490,8 +496,7 @@ export default function PlanChange() {
                         </div>
                     )}
                 </>
-            )
-            }
-        </div >
+            )}
+        </div>
     );
 }

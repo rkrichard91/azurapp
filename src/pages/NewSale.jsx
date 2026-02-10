@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { fetchProductsByChannel } from '../services/pricingService';
 import SummaryCard from '../components/SummaryCard';
@@ -20,6 +22,9 @@ export default function NewSale() {
     const [selectedPriceId, setSelectedPriceId] = useState(null); // Track specific price/duration
     const [quantity, setQuantity] = useState(1);
     const [isRenewal, setIsRenewal] = useState(false); // Para mostrar precio renovación
+
+    // Carrito de compras
+    const [cartItems, setCartItems] = useState([]);
 
     // Cargar productos al iniciar o cambiar canal
     useEffect(() => {
@@ -65,8 +70,7 @@ export default function NewSale() {
     // Filtrar productos por tab actual
     const filteredProducts = products.filter(p => p.category?.code === activeTab);
 
-    // Carrito de compras
-    const [cartItems, setCartItems] = useState([]);
+
 
     // Calcular precio actual (Preview)
     const currentPriceObj = React.useMemo(() => {
@@ -149,6 +153,12 @@ export default function NewSale() {
 
     return (
         <div className="max-w-7xl mx-auto p-6 font-sans h-[calc(100vh-100px)]">
+            <div className="mb-6 flex items-center gap-4">
+                <Link to="/" className="p-2 hover:bg-slate-100 rounded-full transition-colors">
+                    <ArrowLeft className="w-6 h-6 text-slate-600" />
+                </Link>
+                <h1 className="text-2xl font-bold text-slate-800">Nueva Venta</h1>
+            </div>
             <div className="grid grid-cols-12 gap-6 h-full">
 
                 {/* 1. SIDEBAR DE NAVEGACIÓN (Col-span-3) */}

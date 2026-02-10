@@ -1,4 +1,4 @@
-
+/* eslint-env node */
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = 'https://ctpludvbndvzgzghjkxg.supabase.co';
@@ -6,7 +6,8 @@ const supabaseAnonKey = 'sb_publishable_rykF8Nkv9DWXaWDpFOK_2g_AB4eBOsf';
 
 if (!supabaseUrl || !supabaseAnonKey) {
     console.error("❌ Missing Supabase credentials");
-    process.exit(1);
+    process.exit(1); // eslint-disable-line no-undef
+
 }
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);

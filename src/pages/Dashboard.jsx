@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { LayoutContainer } from '../components/layout/LayoutContainer';
 import { Card } from '../components/ui/Card';
 import { Calculator, ShoppingCart, RefreshCw, Box } from 'lucide-react';
 
@@ -15,8 +14,8 @@ export default function Dashboard() {
             active: true
         },
         {
-            title: "Integraciones",
-            desc: "Calculadora de paquetes API y Web.",
+            title: "Adicionales",
+            desc: "Calculadora de paquetes API, Web y Contable.",
             icon: Box,
             color: "bg-blue-500",
             link: "/integrations",
@@ -33,7 +32,7 @@ export default function Dashboard() {
     ];
 
     return (
-        <LayoutContainer>
+        <>
             <div className="py-12 text-center mb-12">
                 <h1 className="text-4xl font-bold text-slate-900 mb-4 tracking-tight">
                     Centro de Cotizaciones <span className="text-blue-600">Azur</span>
@@ -77,6 +76,6 @@ export default function Dashboard() {
                     )
                 ))}
             </div>
-        </LayoutContainer>
+        </>
     );
 }

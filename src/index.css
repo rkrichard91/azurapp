@@ -1,1 +1,19 @@
 @import "tailwindcss";
+
+@layer base {
+
+    html,
+    body {
+        cursor: default;
+        user-select: none;
+        -webkit-user-select: none;
+    }
+
+    input,
+    textarea,
+    [contenteditable="true"] {
+        cursor: text;
+        user-select: text;
+        -webkit-user-select: text;
+    }
+}
