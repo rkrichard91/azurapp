@@ -365,7 +365,14 @@ BEGIN
     INSERT INTO products (name, description, category_id) VALUES ('Factura Recurrente', 'Emisión automática', cat_mod_id) RETURNING id INTO prod_id;
     INSERT INTO prices (product_id, channel_id, price, duration_label) VALUES (prod_id, chan_azur_id, 30.00, 'PAGO ÚNICO'), (prod_id, chan_local_id, 30.00, 'PAGO ÚNICO'), (prod_id, chan_web_id, 30.00, 'PAGO ÚNICO');
 
-    INSERT INTO products (name, description, category_id) VALUES ('Importación (Masiva/Unitaria)', 'Carga de datos', cat_mod_id) RETURNING id INTO prod_id;
+    -- Importación
+    INSERT INTO products (name, description, category_id) VALUES ('Importar factura unitaria', 'Módulo de importación', cat_mod_id) RETURNING id INTO prod_id;
+    INSERT INTO prices (product_id, channel_id, price, duration_label) VALUES (prod_id, chan_azur_id, 20.00, 'PAGO ÚNICO'), (prod_id, chan_local_id, 20.00, 'PAGO ÚNICO'), (prod_id, chan_web_id, 20.00, 'PAGO ÚNICO');
+
+    INSERT INTO products (name, description, category_id) VALUES ('Importar guía unitaria', 'Módulo de importación', cat_mod_id) RETURNING id INTO prod_id;
+    INSERT INTO prices (product_id, channel_id, price, duration_label) VALUES (prod_id, chan_azur_id, 20.00, 'PAGO ÚNICO'), (prod_id, chan_local_id, 20.00, 'PAGO ÚNICO'), (prod_id, chan_web_id, 20.00, 'PAGO ÚNICO');
+
+    INSERT INTO products (name, description, category_id) VALUES ('Importar factura masiva', 'Módulo de importación', cat_mod_id) RETURNING id INTO prod_id;
     INSERT INTO prices (product_id, channel_id, price, duration_label) VALUES (prod_id, chan_azur_id, 20.00, 'PAGO ÚNICO'), (prod_id, chan_local_id, 20.00, 'PAGO ÚNICO'), (prod_id, chan_web_id, 20.00, 'PAGO ÚNICO');
 
     -- Plan Integración (Base $100 / 2000 docs) se maneja con lógica especial, pero lo agregamos como referencia
