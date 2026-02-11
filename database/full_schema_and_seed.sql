@@ -310,6 +310,24 @@ BEGIN
     (prod_id, chan_local_id, '4 AÑOS', 65.18, 55.40),
     (prod_id, chan_local_id, '5 AÑOS', 79.02, 67.17);
 
+    -- Firma Token (Persona Jurídica)
+    INSERT INTO products (name, description, category_id) VALUES ('Firma Token (Persona Jurídica)', 'Token USB Físico para Empresas', cat_sig_id) RETURNING id INTO prod_id;
+    -- AZUR / WEB
+    INSERT INTO prices (product_id, channel_id, duration_label, price, renewal_price) VALUES
+    (prod_id, chan_azur_id, '1 AÑO', 37.00, 31.45), (prod_id, chan_web_id, '1 AÑO', 37.00, 31.45),
+    (prod_id, chan_azur_id, '2 AÑOS', 45.00, 38.25), (prod_id, chan_web_id, '2 AÑOS', 45.00, 38.25),
+    (prod_id, chan_azur_id, '3 AÑOS', 58.00, 49.30), (prod_id, chan_web_id, '3 AÑOS', 58.00, 49.30),
+    (prod_id, chan_azur_id, '4 AÑOS', 71.00, 60.35), (prod_id, chan_web_id, '4 AÑOS', 71.00, 60.35),
+    (prod_id, chan_azur_id, '5 AÑOS', 81.00, 68.85), (prod_id, chan_web_id, '5 AÑOS', 81.00, 68.85);
+
+    -- LOCAL
+    INSERT INTO prices (product_id, channel_id, duration_label, price, renewal_price) VALUES
+    (prod_id, chan_local_id, '1 AÑO', 32.14, 27.32),
+    (prod_id, chan_local_id, '2 AÑOS', 41.07, 34.91),
+    (prod_id, chan_local_id, '3 AÑOS', 52.68, 44.78),
+    (prod_id, chan_local_id, '4 AÑOS', 65.18, 55.40),
+    (prod_id, chan_local_id, '5 AÑOS', 79.02, 67.17);
+
     --------------------------------------------------------------------------------
     -- MÓDULOS
     --------------------------------------------------------------------------------
