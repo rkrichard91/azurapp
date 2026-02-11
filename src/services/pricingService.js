@@ -48,3 +48,20 @@ export async function fetchProductsByChannel(channelCode) {
 
     return processedData;
 }
+
+/**
+ * Fetch all integration packages.
+ */
+export async function fetchIntegrationPackages() {
+    // 3. Get Integration Packages
+    const { data, error } = await supabase
+        .from('integration_packages')
+        .select('*')
+        .order('price', { ascending: true }); // Lowest price first
+
+    if (error) {
+        console.error('Error fetching integration packages:', error);
+        return [];
+    }
+    return data;
+}

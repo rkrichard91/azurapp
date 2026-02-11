@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Trash2, Copy } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { fetchProductsByChannel } from '../services/pricingService';
+import { fetchProductsByChannel, fetchIntegrationPackages } from '../services/pricingService';
 
 const TOKEN_SHIPPING_OPTIONS = [
     { label: "Retiro en Oficina", price: 0 },
@@ -20,6 +20,8 @@ export default function NewSale() {
 
     // Selections
     const [selectedPlanId, setSelectedPlanId] = useState("");
+    const [integrationPackages, setIntegrationPackages] = useState([]);
+    const [selectedIntegrationPackageId, setSelectedIntegrationPackageId] = useState("");
     const [emissionPoints, setEmissionPoints] = useState(0);
 
     // Cart Items Data Structure
@@ -86,6 +88,12 @@ export default function NewSale() {
             }
 
             setProducts(data);
+
+            // Fetch Integration Packages (once, or on channel change if needed)
+            // They are global (API/WEB packages), so we can fetch once or just reuse.
+            const pkgs = await fetchIntegrationPackages();
+            setIntegrationPackages(pkgs);
+
             setLoading(false);
         }
         load();
@@ -220,8 +228,23 @@ export default function NewSale() {
             });
         }
 
+        // 5. Integration Packages (Comprobantes Adicionales)
+        if (selectedIntegrationPackageId) {
+            const pkg = integrationPackages.find(p => p.id === selectedIntegrationPackageId);
+            if (pkg) {
+                items.push({
+                    type: 'PACKAGE',
+                    name: `Paquete Integración ${pkg.type} (${pkg.quantity} docs)`,
+                    quantity: 1,
+                    unitPrice: pkg.price,
+                    total: pkg.price,
+                    duration: 'PAGO ÚNICO'
+                });
+            }
+        }
+
         return items;
-    }, [selectedPlanId, selectedSignatures, selectedModules, emissionPoints, planProducts, signatureProducts, moduleProducts, emissionPointProduct]);
+    }, [selectedPlanId, selectedSignatures, selectedModules, emissionPoints, selectedIntegrationPackageId, planProducts, signatureProducts, moduleProducts, emissionPointProduct, integrationPackages]);
 
     // Totals
     const subtotal = cartItems.reduce((acc, item) => acc + item.total, 0);
@@ -309,6 +332,7 @@ export default function NewSale() {
         }
 
         if (item.type === 'EXTRA') setEmissionPoints(0);
+        if (item.type === 'PACKAGE') setSelectedIntegrationPackageId("");
     };
 
     const handleCopy = (type) => {
@@ -337,7 +361,9 @@ export default function NewSale() {
             setSelectedPlanId("");
             setSelectedSignatures([]);
             setSelectedModules([]);
+            setSelectedModules([]);
             setEmissionPoints(0);
+            setSelectedIntegrationPackageId("");
         }
     };
 
@@ -541,7 +567,6 @@ export default function NewSale() {
                                             />
                                             <label htmlFor="renewalCheck" className="text-slate-700 font-medium select-none cursor-pointer">Renovación de Firma</label>
                                         </div>
-
                                         {/* Discount */}
                                         <div>
                                             <label className="text-sm font-bold text-slate-600 block mb-1">Descuento</label>
@@ -658,151 +683,151 @@ export default function NewSale() {
                                 <p className="text-xs text-slate-400 mt-1">Precio escalonado: 1-11: $2.25 | 12-49: $2.00 | 50+: $1.75</p>
                             )}
                         </div>
+                    </div>
 
-                        {/* Module Modal */}
-                        {showModuleModal && (
-                            <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                                <div className="bg-white rounded-xl w-full max-w-2xl p-6 animate-in fade-in zoom-in duration-200">
-                                    <h3 className="text-xl font-bold mb-6 text-center text-slate-800">Seleccionar Módulos Adicionales</h3>
+                    {/* Module Modal */}
+                    {showModuleModal && (
+                        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                            <div className="bg-white rounded-xl w-full max-w-2xl p-6 animate-in fade-in zoom-in duration-200">
+                                <h3 className="text-xl font-bold mb-6 text-center text-slate-800">Seleccionar Módulos Adicionales</h3>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 max-h-[60vh] overflow-y-auto p-2">
-                                        {moduleProducts.map(p => {
-                                            const priceObj = p.prices?.[0]; // Assuming single price for modules usually
-                                            // Check if already selected to init state (but we use a temp state in a real app, here we'll simplify and use direct manipulation or a local inner component)
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 max-h-[60vh] overflow-y-auto p-2">
+                                    {moduleProducts.map(p => {
+                                        const priceObj = p.prices?.[0]; // Assuming single price for modules usually
+                                        // Check if already selected to init state (but we use a temp state in a real app, here we'll simplify and use direct manipulation or a local inner component)
 
-                                            // Better: New component logic inline
-                                            // We need to manage state of checked/quantity manually here if we want "Apply" logic.
-                                            // For this prompt, I will implement a self-contained logic block inside the map 
-                                            // BUT `selectedModules` is in parent. 
+                                        // Better: New component logic inline
+                                        // We need to manage state of checked/quantity manually here if we want "Apply" logic.
+                                        // For this prompt, I will implement a self-contained logic block inside the map 
+                                        // BUT `selectedModules` is in parent. 
 
-                                            // Let's create a temporary state map for this modal? 
-                                            // No, let's just use the `selectedModules` directly but with a specialized UI.
+                                        // Let's create a temporary state map for this modal? 
+                                        // No, let's just use the `selectedModules` directly but with a specialized UI.
 
-                                            const isSelected = selectedModules.some(m => m.productId === p.id);
-                                            const selectedItem = selectedModules.find(m => m.productId === p.id);
-                                            const quantity = selectedItem?.quantity || 1;
+                                        const isSelected = selectedModules.some(m => m.productId === p.id);
+                                        const selectedItem = selectedModules.find(m => m.productId === p.id);
+                                        const quantity = selectedItem?.quantity || 1;
 
-                                            // Determine if it needs quantity input
-                                            const showQuantity = p.name.includes("Usuario") || p.name.includes("Empresa") || p.name.includes("Establecimiento");
+                                        // Determine if it needs quantity input
+                                        const showQuantity = p.name.includes("Usuario") || p.name.includes("Empresa") || p.name.includes("Establecimiento");
 
-                                            return (
-                                                <div key={p.id} className="flex items-center justify-between pb-2 border-b border-slate-100 last:border-0 hover:bg-slate-50 rounded px-2 transition-colors">
-                                                    <div className="flex items-start gap-3 flex-1">
-                                                        <input
-                                                            type="checkbox"
-                                                            className="mt-1 w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                                                            checked={isSelected}
-                                                            onChange={(e) => {
-                                                                if (e.target.checked) {
-                                                                    // Add with default qty 1
-                                                                    setSelectedModules(prev => [...prev, {
-                                                                        productId: p.id,
-                                                                        priceId: priceObj?.id,
-                                                                        quantity: 1
-                                                                    }]);
-                                                                } else {
-                                                                    // Remove
-                                                                    setSelectedModules(prev => prev.filter(m => m.productId !== p.id));
-                                                                }
-                                                            }}
-                                                        />
-                                                        <div>
-                                                            <div className="text-sm font-semibold text-slate-700 leading-snug">{p.name}</div>
-                                                            <div className="text-xs text-slate-500 font-medium">({formatCurrency(priceObj?.price || 0)})</div>
-                                                        </div>
+                                        return (
+                                            <div key={p.id} className="flex items-center justify-between pb-2 border-b border-slate-100 last:border-0 hover:bg-slate-50 rounded px-2 transition-colors">
+                                                <div className="flex items-start gap-3 flex-1">
+                                                    <input
+                                                        type="checkbox"
+                                                        className="mt-1 w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                                                        checked={isSelected}
+                                                        onChange={(e) => {
+                                                            if (e.target.checked) {
+                                                                // Add with default qty 1
+                                                                setSelectedModules(prev => [...prev, {
+                                                                    productId: p.id,
+                                                                    priceId: priceObj?.id,
+                                                                    quantity: 1
+                                                                }]);
+                                                            } else {
+                                                                // Remove
+                                                                setSelectedModules(prev => prev.filter(m => m.productId !== p.id));
+                                                            }
+                                                        }}
+                                                    />
+                                                    <div>
+                                                        <div className="text-sm font-semibold text-slate-700 leading-snug">{p.name}</div>
+                                                        <div className="text-xs text-slate-500 font-medium">({formatCurrency(priceObj?.price || 0)})</div>
                                                     </div>
-
-                                                    {showQuantity && isSelected && (
-                                                        <div className="w-20 ml-4">
-                                                            <input
-                                                                type="number"
-                                                                min="1"
-                                                                value={quantity}
-                                                                onChange={(e) => {
-                                                                    const val = Math.max(1, parseInt(e.target.value) || 1);
-                                                                    setSelectedModules(prev => prev.map(m => m.productId === p.id ? { ...m, quantity: val } : m));
-                                                                }}
-                                                                className="w-full p-1 border border-slate-300 rounded text-center text-sm font-bold bg-white"
-                                                            />
-                                                        </div>
-                                                    )}
                                                 </div>
-                                            );
-                                        })}
-                                    </div>
 
-                                    <div className="mt-8">
-                                        <button
-                                            onClick={() => setShowModuleModal(false)}
-                                            className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold transition-colors shadow-md"
-                                        >
-                                            Cerrar y Aplicar
-                                        </button>
-                                    </div>
+                                                {showQuantity && isSelected && (
+                                                    <div className="w-20 ml-4">
+                                                        <input
+                                                            type="number"
+                                                            min="1"
+                                                            value={quantity}
+                                                            onChange={(e) => {
+                                                                const val = Math.max(1, parseInt(e.target.value) || 1);
+                                                                setSelectedModules(prev => prev.map(m => m.productId === p.id ? { ...m, quantity: val } : m));
+                                                            }}
+                                                            className="w-full p-1 border border-slate-300 rounded text-center text-sm font-bold bg-white"
+                                                        />
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+
+                                <div className="mt-8">
+                                    <button
+                                        onClick={() => setShowModuleModal(false)}
+                                        className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold transition-colors shadow-md"
+                                    >
+                                        Cerrar y Aplicar
+                                    </button>
                                 </div>
                             </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* --- SUMMARY --- */}
+            <div className="md:col-span-1">
+                <div className="sticky top-28 space-y-6">
+
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wide mb-4">Desglose de la Venta</h3>
+
+                        {cartItems.length === 0 ? (
+                            <p className="text-sm text-slate-400 italic">Seleccione productos para ver el desglose.</p>
+                        ) : (
+                            <ul className="space-y-3">
+                                {cartItems.map((item, i) => (
+                                    <li key={i} className="text-sm border-b border-slate-100 pb-2 last:border-0 last:pb-0">
+                                        <div className="flex justify-between items-start">
+                                            <span className="text-slate-700 font-medium">{item.quantity}x {item.name}</span>
+                                            <span className="text-slate-900 font-bold">{formatCurrency(item.total)}</span>
+                                        </div>
+                                        <div className="text-xs text-slate-400">{item.duration} {item.details && `| ${item.details}`}</div>
+                                    </li>
+                                ))}
+                            </ul>
                         )}
                     </div>
-                </div>
 
-                {/* --- SUMMARY --- */}
-                <div className="md:col-span-1">
-                    <div className="sticky top-28 space-y-6">
-
-                        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wide mb-4">Desglose de la Venta</h3>
-
-                            {cartItems.length === 0 ? (
-                                <p className="text-sm text-slate-400 italic">Seleccione productos para ver el desglose.</p>
-                            ) : (
-                                <ul className="space-y-3">
-                                    {cartItems.map((item, i) => (
-                                        <li key={i} className="text-sm border-b border-slate-100 pb-2 last:border-0 last:pb-0">
-                                            <div className="flex justify-between items-start">
-                                                <span className="text-slate-700 font-medium">{item.quantity}x {item.name}</span>
-                                                <span className="text-slate-900 font-bold">{formatCurrency(item.total)}</span>
-                                            </div>
-                                            <div className="text-xs text-slate-400">{item.duration} {item.details && `| ${item.details}`}</div>
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
-                        </div>
-
-                        <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
-                            <h3 className="text-sm font-bold text-slate-800 mb-4">Resumen Final</h3>
-                            <div className="space-y-2 mb-4">
-                                <div className="flex justify-between text-slate-600">
-                                    <span>Base Imponible:</span>
-                                    <span>{formatCurrency(subtotal)}</span>
-                                </div>
-                                <div className="flex justify-between text-slate-600">
-                                    <span>(+) IVA (15%):</span>
-                                    <span>{formatCurrency(iva)}</span>
-                                </div>
+                    <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
+                        <h3 className="text-sm font-bold text-slate-800 mb-4">Resumen Final</h3>
+                        <div className="space-y-2 mb-4">
+                            <div className="flex justify-between text-slate-600">
+                                <span>Base Imponible:</span>
+                                <span>{formatCurrency(subtotal)}</span>
                             </div>
-                            <div className="flex justify-between items-center bg-blue-600 text-white p-4 rounded-lg shadow-md">
-                                <span className="font-bold text-lg">TOTAL:</span>
-                                <span className="font-bold text-2xl">{formatCurrency(total)}</span>
+                            <div className="flex justify-between text-slate-600">
+                                <span>(+) IVA (15%):</span>
+                                <span>{formatCurrency(iva)}</span>
                             </div>
                         </div>
-
-                        <div className="space-y-2">
-                            <button onClick={() => handleCopy('RESUMEN')} className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors">
-                                <Copy className="w-4 h-4" /> Copiar Resumen
-                            </button>
-                            <button onClick={() => handleCopy('DETALLE')} className="w-full py-3 bg-slate-700 hover:bg-slate-800 text-white rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors">
-                                <Copy className="w-4 h-4" /> Copiar Lista
-                            </button>
-                            <button onClick={handleClear} className="w-full py-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors">
-                                <Trash2 className="w-4 h-4" /> Borrar Todo
-                            </button>
+                        <div className="flex justify-between items-center bg-blue-600 text-white p-4 rounded-lg shadow-md">
+                            <span className="font-bold text-lg">TOTAL:</span>
+                            <span className="font-bold text-2xl">{formatCurrency(total)}</span>
                         </div>
-
                     </div>
-                </div>
 
+                    <div className="space-y-2">
+                        <button onClick={() => handleCopy('RESUMEN')} className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors">
+                            <Copy className="w-4 h-4" /> Copiar Resumen
+                        </button>
+                        <button onClick={() => handleCopy('DETALLE')} className="w-full py-3 bg-slate-700 hover:bg-slate-800 text-white rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors">
+                            <Copy className="w-4 h-4" /> Copiar Lista
+                        </button>
+                        <button onClick={handleClear} className="w-full py-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors">
+                            <Trash2 className="w-4 h-4" /> Borrar Todo
+                        </button>
+                    </div>
+
+                </div>
             </div>
+
         </div>
     );
 }

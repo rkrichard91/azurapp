@@ -65,9 +65,11 @@ export async function calculateIntegrationQuote(type, quantity, cycle = 'ANNUAL'
         baseDocs = 15000;
         planName = "Plan Ilimitado (Reseller)";
 
-        const tier = UNLIMITED_PRICING.find(p => p.qty === quantity);
-        additionalPrice = tier ? tier.price : 0;
-        if (additionalPrice > 0) additionalDocs = quantity;
+        if (quantity > 0) {
+            const tier = UNLIMITED_PRICING.find(p => p.qty === quantity);
+            additionalPrice = tier ? tier.price : 0;
+            if (additionalPrice > 0) additionalDocs = quantity;
+        }
 
         breakdown.push({
             item: "Plan Base Ilimitado",
@@ -88,8 +90,11 @@ export async function calculateIntegrationQuote(type, quantity, cycle = 'ANNUAL'
         const baseDocsMonthly = 1250;
         planName = "Plan Contable";
 
-        const tier = ACCOUNTING_PRICING.find(p => p.qty === quantity);
-        const addMonthly = tier ? tier.price : 0;
+        let addMonthly = 0;
+        if (quantity > 0) {
+            const tier = ACCOUNTING_PRICING.find(p => p.qty === quantity);
+            addMonthly = tier ? tier.price : 0;
+        }
 
         // Multiplicador de ciclo
         let multiplier = 1;
@@ -119,34 +124,37 @@ export async function calculateIntegrationQuote(type, quantity, cycle = 'ANNUAL'
         }
 
     } else {
-        // Lógica Original (API / WEB)
-        const { data: pkg, error } = await supabase
-            .from('integration_packages')
-            .select('*')
-            .eq('type', type)
-            .eq('quantity', quantity)
-            .single();
-
-        if (error || !pkg) return null;
-
+        // Lógica API / WEB
         basePrice = BASE_CONFIG.price;
         baseDocs = BASE_CONFIG.docs;
-        additionalPrice = parseFloat(pkg.price);
-        additionalDocs = pkg.quantity;
         planName = `Integración ${type}`;
 
-        breakdown.push(
-            {
-                item: "Plan Base (Obligatorio)",
-                desc: "Incluye 2,000 comprobantes anuales",
-                price: basePrice.toFixed(2)
-            },
-            {
-                item: `Paquete Adicional ${type}`,
-                desc: `${pkg.quantity.toLocaleString()} comprobantes extra`,
-                price: additionalPrice.toFixed(2)
+        breakdown.push({
+            item: "Plan Base (Obligatorio)",
+            desc: "Incluye 2,000 comprobantes anuales",
+            price: basePrice.toFixed(2)
+        });
+
+        // Solo buscar paquete adicional si quantity > 0
+        if (quantity > 0) {
+            const { data: pkg, error } = await supabase
+                .from('integration_packages')
+                .select('*')
+                .eq('type', type)
+                .eq('quantity', quantity)
+                .single();
+
+            if (!error && pkg) {
+                additionalPrice = parseFloat(pkg.price);
+                additionalDocs = pkg.quantity;
+
+                breakdown.push({
+                    item: `Paquete Adicional ${type}`,
+                    desc: `${pkg.quantity.toLocaleString()} comprobantes extra`,
+                    price: additionalPrice.toFixed(2)
+                });
             }
-        );
+        }
     }
 
     // Cálculo Final

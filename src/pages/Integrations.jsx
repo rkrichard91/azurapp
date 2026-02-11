@@ -7,7 +7,7 @@ import { CheckCircle2, AlertCircle, Copy, FileText } from 'lucide-react';
 
 export default function IntegrationsCalculator() {
     const [type, setType] = useState('API');
-    const [quantity, setQuantity] = useState(5000);
+    const [quantity, setQuantity] = useState(0);
     const [cycle, setCycle] = useState('ANNUAL'); // Nuevo estado para ciclo
     const [quote, setQuote] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -15,6 +15,7 @@ export default function IntegrationsCalculator() {
 
     // Opciones hardcoded (v2.0 MVP)
     const optionsAPI = [
+        { value: 0, label: 'Ninguno' },
         { value: 5000, label: '5,000 Comprobantes Adicionales' },
         { value: 10000, label: '10,000 Comprobantes Adicionales' },
         { value: 20000, label: '20,000 Comprobantes Adicionales' },
@@ -26,6 +27,7 @@ export default function IntegrationsCalculator() {
     ];
 
     const optionsWEB = [
+        { value: 0, label: 'Ninguno' },
         { value: 500, label: '500 Comprobantes Adicionales' },
         { value: 1000, label: '1,000 Comprobantes Adicionales' },
         { value: 2000, label: '2,000 Comprobantes Adicionales' },
@@ -37,6 +39,7 @@ export default function IntegrationsCalculator() {
     ];
 
     const optionsUNLIMITED = [
+        { value: 0, label: 'Ninguno' },
         { value: 500, label: '500 Comprobantes Extra' },
         { value: 1000, label: '1,000 Comprobantes Extra' },
         { value: 5000, label: '5,000 Comprobantes Extra' },
@@ -54,6 +57,7 @@ export default function IntegrationsCalculator() {
     ];
 
     const optionsACCOUNTING = [
+        { value: 0, label: 'Ninguno' },
         { value: 125, label: '125 Docs Extra / mes' },
         { value: 250, label: '250 Docs Extra / mes' },
         { value: 500, label: '500 Docs Extra / mes' },
@@ -142,25 +146,25 @@ Total: ${quote.summary.total_docs.toLocaleString()} Docs
                         <label className="block text-sm font-medium text-slate-500 mb-3">Tipo de Servicio</label>
                         <div className="grid grid-cols-2 gap-2 bg-slate-100 p-1.5 rounded-xl">
                             <button
-                                onClick={() => { setType('API'); setQuantity(5000); }}
+                                onClick={() => { setType('API'); setQuantity(0); }}
                                 className={`py-2 rounded-lg font-semibold text-xs transition-all ${type === 'API' ? 'bg-white shadow text-blue-600' : 'text-slate-500 hover:text-slate-700'}`}
                             >
                                 INTEGRACIÓN API REST
                             </button>
                             <button
-                                onClick={() => { setType('WEB'); setQuantity(500); }}
+                                onClick={() => { setType('WEB'); setQuantity(0); }}
                                 className={`py-2 rounded-lg font-semibold text-xs transition-all ${type === 'WEB' ? 'bg-white shadow text-blue-600' : 'text-slate-500 hover:text-slate-700'}`}
                             >
                                 INTEGRACIÓN USO WEB
                             </button>
                             <button
-                                onClick={() => { setType('UNLIMITED'); setQuantity(500); }}
+                                onClick={() => { setType('UNLIMITED'); setQuantity(0); }}
                                 className={`py-2 rounded-lg font-semibold text-xs transition-all ${type === 'UNLIMITED' ? 'bg-white shadow text-blue-600' : 'text-slate-500 hover:text-slate-700'}`}
                             >
                                 ILIMITADO
                             </button>
                             <button
-                                onClick={() => { setType('ACCOUNTING'); setQuantity(125); }}
+                                onClick={() => { setType('ACCOUNTING'); setQuantity(0); }}
                                 className={`py-2 rounded-lg font-semibold text-xs transition-all ${type === 'ACCOUNTING' ? 'bg-white shadow text-blue-600' : 'text-slate-500 hover:text-slate-700'}`}
                             >
                                 CONTABLE
