@@ -2,31 +2,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Check, X, Copy, Info, AlertTriangle } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { fetchProductsByChannel } from '../services/pricingService';
-
-// --- DATA ---
-const IVA_RATE = 0.15;
-
-const FEATURE_ORDER = [
-    "Comprobantes año", "Usuarios", "Puntos de Emisión", "Empresas", "Establecimientos",
-    "Inventario", "Proformas", "Soporte Técnico", "Portal Clientes", "SMTP Propio",
-    "Compras", "Retenciones", "Guías de Remisión", "Liquidación Compras", "Cuentas por Cobrar",
-    "Cuentas por Pagar", "Notas de Débito", "Generación ATS"
-];
-
-const FEATURE_DISPLAY_NAMES = {
-    "Comprobantes año": "Comprobantes al año",
-};
-
-// Helper Functions
-const formatCurrency = (amount) => `$${amount.toFixed(2)}`;
-const roundToTwo = (num) => Math.round((num + Number.EPSILON) * 100) / 100;
-const formatDate = (date) => {
-    if (!date) return '';
-    const day = String(date.getUTCDate()).padStart(2, '0');
-    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-    const year = date.getUTCFullYear();
-    return `${day}/${month}/${year}`;
-};
+import { formatCurrency, roundToTwo, formatDate } from '../utils/format';
+import { IVA_RATE, FEATURE_ORDER, FEATURE_DISPLAY_NAMES } from '../constants';
 
 export default function PlanChange() {
     const { canalSeleccionado } = useApp();
@@ -403,8 +380,8 @@ export default function PlanChange() {
                                     {calculation.difference > 0 ? (
                                         <div className="mt-8 pt-6 border-t border-slate-100">
                                             <div className="space-y-2 text-right text-slate-600 mb-4">
-                                                <div className="flex justify-between items-center"><p>Base Imponible:</p> <p class="font-medium">{formatCurrency(calculation.baseImponible)}</p></div>
-                                                <div className="flex justify-between items-center"><p>IVA (15%):</p> <p class="font-medium">{formatCurrency(calculation.iva)}</p></div>
+                                                <div className="flex justify-between items-center"><p>Base Imponible:</p> <p className="font-medium">{formatCurrency(calculation.baseImponible)}</p></div>
+                                                <div className="flex justify-between items-center"><p>IVA (15%):</p> <p className="font-medium">{formatCurrency(calculation.iva)}</p></div>
                                             </div>
                                             <div className="bg-blue-600 text-white p-6 rounded-xl flex justify-between items-center shadow-lg transform transition hover:scale-[1.01]">
                                                 <span className="text-xl font-bold">TOTAL A PAGAR:</span>

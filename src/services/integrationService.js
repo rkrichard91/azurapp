@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient';
+import { IVA_RATE } from '../constants';
 
 // Regla de Negocio: Valores Base
 const BASE_CONFIG = {
@@ -6,7 +7,6 @@ const BASE_CONFIG = {
     docs: 2000,
     name: "Plan Base Integración"
 };
-const IVA_RATE = 0.15;
 
 /**
  * Calcula cotización acumulativa
