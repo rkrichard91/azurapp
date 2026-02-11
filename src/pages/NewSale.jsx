@@ -4,6 +4,15 @@ import { ArrowLeft, Trash2, Copy } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { fetchProductsByChannel } from '../services/pricingService';
 
+const TOKEN_SHIPPING_OPTIONS = [
+    { label: "Retiro en Oficina", price: 0 },
+    { label: "Guayaquil", price: 4.02 },
+    { label: "Costa", price: 5.75 },
+    { label: "Sierra", price: 6.90 },
+    { label: "Oriente", price: 9.20 },
+    { label: "Galápagos", price: 16.10 },
+];
+
 export default function NewSale() {
     const { canalSeleccionado, setCanalSeleccionado } = useApp();
     const [products, setProducts] = useState([]);
@@ -153,7 +162,15 @@ export default function NewSale() {
                 // Apply discount if needed (logic placeholder)
                 // if (sig.discount > 0) unitPrice = unitPrice * (1 - sig.discount / 100);
 
-                const total = unitPrice * sig.quantity;
+                // Applying Shipping Logic (Flat rate per batch for now)
+                const shippingMatch = sig.shipping ? sig.shipping.match(/\$([\d\.]+)/) : null;
+                const shippingCost = shippingMatch ? parseFloat(shippingMatch[1]) : 0;
+
+                // Assuming shipping is per line item (shipment), not per unit quantity, unless specified?
+                // Usually "Envío" is for the package. If quantity > 1, are they sent together? Yes.
+                // Shipping prices are IVA included, so we add the base amount to the subtotal
+                const shippingBase = shippingCost / 1.15;
+                const total = (unitPrice * sig.quantity) + shippingBase;
 
                 items.push({
                     type: 'SIGNATURE',
@@ -551,8 +568,11 @@ export default function NewSale() {
                                                             value={sigForm.shipping}
                                                             onChange={(e) => setSigForm({ ...sigForm, shipping: e.target.value })}
                                                         >
-                                                            <option value="Retiro en Oficina - $0.00 (IVA Incl.)">Retiro en Oficina - $0.00 (IVA Incl.)</option>
-                                                            <option value="Envío a Domicilio - $3.50 (IVA Incl.)">Envío a Domicilio - $3.50 (IVA Incl.)</option>
+                                                            {TOKEN_SHIPPING_OPTIONS.map(opt => (
+                                                                <option key={opt.label} value={`${opt.label} - $${opt.price.toFixed(2)} (IVA Incl.)`}>
+                                                                    {`${opt.label} - $${opt.price.toFixed(2)} (IVA Incl.)`}
+                                                                </option>
+                                                            ))}
                                                         </select>
                                                     </div>
                                                 );
