@@ -22,7 +22,8 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
         quantity: 1,
         isRenewal: false,
         shipping: "Retiro en Oficina - $0.00 (IVA Incl.)",
-        discount: 0
+        discount: 0,
+        idType: "cedula" // 'cedula' | 'ruc'
     });
 
     // --- Cart Items derivados ---
@@ -63,10 +64,24 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
                 const shippingBase = shippingCost / 1.15;
                 const total = (unitPrice * sig.quantity) + shippingBase;
 
+                // Determinar si mostrar RUC/Cédula
+                let nameSuffix = "";
+                let baseName = product.name;
+
+                if (product.name.toLowerCase().includes("natural")) {
+                    // Limpiar "(Cédula)" del nombre base si existe, para no duplicar ni mostrarlo si se elige Cédula
+                    baseName = baseName.replace(/\s*\(Cédula\)/i, "");
+
+                    if (sig.idType === 'ruc') {
+                        nameSuffix = " (RUC)";
+                    }
+                    // Si es cédula, no agregamos sufijo (el usuario pidió quitar "Cédula")
+                }
+
                 items.push({
                     type: 'SIGNATURE',
                     _sigId: sig.id,
-                    name: `${product.name}${sig.isRenewal ? ' (Renovación)' : ''}`,
+                    name: `${baseName}${sig.isRenewal ? ' (Renovación)' : ''}${nameSuffix}`,
                     quantity: sig.quantity,
                     unitPrice,
                     total,
@@ -143,7 +158,8 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
                 quantity: 1,
                 isRenewal: false,
                 shipping: "Retiro en Oficina - $0.00 (IVA Incl.)",
-                discount: 0
+                discount: 0,
+                idType: "cedula"
             });
         }
         setShowSignatureModal(true);
@@ -191,7 +207,7 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
         } else {
             text = `Detalle de Cotización:\n\n`;
             cartItems.forEach(item => {
-                text += `${item.name} (${item.duration}) x ${item.quantity}: $${item.total.toFixed(2)}\n`;
+                text += `${item.name} (${item.duration}) x ${item.quantity}: $${item.total.toFixed(2)}(NO INCLUYE IVA)\n`;
             });
             text += `\nSubtotal: $${subtotal.toFixed(2)}`;
             text += `\nIVA (15%): $${iva.toFixed(2)}`;

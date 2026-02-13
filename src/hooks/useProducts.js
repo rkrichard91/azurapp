@@ -28,8 +28,8 @@ export function useProducts(canalSeleccionado) {
     // Opciones de firma mapeadas
     const signatureOptions = useMemo(() => {
         const mapping = [
-            { label: "Firma P. Natural (Cédula)", dbName: "Firma P. Natural (Cédula)" },
-            { label: "Firma P. Jurídica (RUC)", dbName: "Firma P. Jurídica (Empresa)" },
+            { label: "Firma P. Natural", dbName: "Firma P. Natural (Cédula)" },
+            { label: "Firma P. Jurídica", dbName: "Firma P. Jurídica (Empresa)" },
             { label: "Firma en Token (Persona Natural)", dbName: "Firma en Token (Persona Natural)" },
             { label: "Firma Token (Persona Jurídica)", dbName: "Firma Token (Persona Jurídica)" }
         ];

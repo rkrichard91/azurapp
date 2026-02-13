@@ -131,6 +131,43 @@ export default function SignatureSection({
                                 </select>
                             </div>
 
+                            {/* Selector RUC/Cédula (Solo para Persona Natural) */}
+                            {(() => {
+                                const prodName = signatureProducts.find(p => p.id === sigForm.productId)?.name || "";
+                                if (prodName.toLowerCase().includes("natural")) {
+                                    return (
+                                        <div className="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                                            <span className="text-sm font-bold text-slate-700 block mb-2">Tipo de Identificación:</span>
+                                            <div className="flex gap-4">
+                                                <label className="flex items-center gap-2 cursor-pointer">
+                                                    <input
+                                                        type="radio"
+                                                        name="idType"
+                                                        value="cedula"
+                                                        checked={sigForm.idType === 'cedula'}
+                                                        onChange={(e) => setSigForm({ ...sigForm, idType: e.target.value })}
+                                                        className="text-blue-600 focus:ring-blue-500"
+                                                    />
+                                                    <span className="text-slate-700">Cédula</span>
+                                                </label>
+                                                <label className="flex items-center gap-2 cursor-pointer">
+                                                    <input
+                                                        type="radio"
+                                                        name="idType"
+                                                        value="ruc"
+                                                        checked={sigForm.idType === 'ruc'}
+                                                        onChange={(e) => setSigForm({ ...sigForm, idType: e.target.value })}
+                                                        className="text-blue-600 focus:ring-blue-500"
+                                                    />
+                                                    <span className="text-slate-700">RUC</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    );
+                                }
+                                return null;
+                            })()}
+
                             {/* Renovación */}
                             <div className="flex items-center gap-2">
                                 <input
