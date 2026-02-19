@@ -112,18 +112,36 @@ export default function NewSale() {
                             <h2 className="text-lg font-bold text-slate-800">Plan de Facturación</h2>
                         </div>
 
-                        <div className="relative">
-                            <select
-                                value={cart.selectedPlanId}
-                                onChange={(e) => cart.setSelectedPlanId(e.target.value)}
-                                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-lg appearance-none text-slate-700 font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                            >
-                                <option value="">No Incluir Plan</option>
-                                {planProducts.map(p => (
-                                    <option key={p.id} value={p.id}>{p.name} - {p.prices && p.prices[0] ? formatCurrency(p.prices[0].price) : '$?'}</option>
-                                ))}
-                            </select>
-                            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">▼</div>
+                        <div className="flex gap-4">
+                            <div className="relative flex-1">
+                                <select
+                                    value={cart.selectedPlanId}
+                                    onChange={(e) => {
+                                        cart.setSelectedPlanId(e.target.value);
+                                        cart.setPlanMonths(1);
+                                    }}
+                                    className="w-full p-4 bg-slate-50 border border-slate-200 rounded-lg appearance-none text-slate-700 font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                >
+                                    <option value="">No Incluir Plan</option>
+                                    {planProducts.map(p => (
+                                        <option key={p.id} value={p.id}>{p.name} - {p.prices && p.prices[0] ? formatCurrency(p.prices[0].price) : '$?'}</option>
+                                    ))}
+                                </select>
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">▼</div>
+                            </div>
+
+                            {planProducts.find(p => p.id === cart.selectedPlanId)?.name.toUpperCase().includes("TRANSICI") && (
+                                <div className="w-24">
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        value={cart.planMonths}
+                                        onChange={(e) => cart.setPlanMonths(Math.max(1, parseInt(e.target.value) || 1))}
+                                        className="w-full p-4 bg-slate-50 border border-slate-200 rounded-lg text-center text-slate-700 font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                        placeholder="Meses"
+                                    />
+                                </div>
+                            )}
                         </div>
                     </div>
 

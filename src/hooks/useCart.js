@@ -7,6 +7,7 @@ import { IVA_RATE, EMISSION_POINT_TIERS } from '../constants';
 export function useCart({ planProducts, signatureProducts, moduleProducts, emissionPointProduct, signatureOptions }) {
     // Selecciones
     const [selectedPlanId, setSelectedPlanId] = useState("");
+    const [planMonths, setPlanMonths] = useState(1); // Nuevo estado para meses del plan
     const [emissionPoints, setEmissionPoints] = useState(0);
     const [selectedSignatures, setSelectedSignatures] = useState([]);
     const [selectedModules, setSelectedModules] = useState([]);
@@ -35,12 +36,14 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
             const plan = planProducts.find(p => p.id === selectedPlanId);
             if (plan) {
                 const priceObj = plan.prices ? plan.prices[0] : null;
+                const quantity = plan.name.toUpperCase().includes("TRANSICI") ? planMonths : 1;
+
                 items.push({
                     type: 'PLAN',
                     name: plan.name,
-                    quantity: 1,
+                    quantity: quantity,
                     unitPrice: priceObj ? parseFloat(priceObj.price) : 0,
-                    total: priceObj ? parseFloat(priceObj.price) : 0,
+                    total: priceObj ? parseFloat(priceObj.price) * quantity : 0,
                     duration: priceObj ? priceObj.duration_label : ''
                 });
             }
@@ -124,7 +127,7 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
         }
 
         return items;
-    }, [selectedPlanId, selectedSignatures, selectedModules, emissionPoints, planProducts, signatureProducts, moduleProducts, emissionPointProduct]);
+    }, [selectedPlanId, planMonths, selectedSignatures, selectedModules, emissionPoints, planProducts, signatureProducts, moduleProducts, emissionPointProduct]);
 
     // Totales
     const subtotal = cartItems.reduce((acc, item) => acc + item.total, 0);
@@ -175,7 +178,10 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
     };
 
     const handleRemoveItem = (item) => {
-        if (item.type === 'PLAN') setSelectedPlanId("");
+        if (item.type === 'PLAN') {
+            setSelectedPlanId("");
+            setPlanMonths(1);
+        }
         if (item.type === 'SIGNATURE') {
             setSelectedSignatures(prev => prev.filter(s => s.id !== item._sigId));
         }
@@ -220,6 +226,7 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
     const handleClear = () => {
         if (window.confirm("¿Borrar toda la cotización?")) {
             setSelectedPlanId("");
+            setPlanMonths(1);
             setSelectedSignatures([]);
             setSelectedModules([]);
             setEmissionPoints(0);
@@ -229,6 +236,7 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
     return {
         // Estado
         selectedPlanId, setSelectedPlanId,
+        planMonths, setPlanMonths,
         emissionPoints, setEmissionPoints,
         selectedSignatures, setSelectedSignatures,
         selectedModules, setSelectedModules,
