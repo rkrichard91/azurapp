@@ -3,7 +3,7 @@ import { IVA_RATE } from '../constants';
 
 // Regla de Negocio: Valores Base
 const BASE_CONFIG = {
-    price: 100.00,
+    price: 150.00,
     docs: 2000,
     name: "Plan Base Integración"
 };
@@ -106,12 +106,12 @@ export async function calculateIntegrationQuote(type, quantity, cycle = 'ANNUAL'
         basePrice = baseMonthly * multiplier;
         additionalPrice = addMonthly * multiplier;
 
-        baseDocs = baseDocsMonthly * multiplier;
-        additionalDocs = (quantity || 0) * multiplier;
+        baseDocs = baseDocsMonthly;
+        additionalDocs = (quantity || 0);
 
         breakdown.push({
             item: `Plan Base (${cycleName})`,
-            desc: `${baseDocsMonthly.toLocaleString()} docs/mes x ${multiplier} meses`,
+            desc: `Límite de ${baseDocsMonthly.toLocaleString()} docs/mes`,
             price: basePrice.toFixed(2)
         });
 

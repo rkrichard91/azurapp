@@ -15,7 +15,33 @@ export default function IntegrationsCalculator() {
 
     // Opciones hardcoded (v2.0 MVP)
     const optionsAPI = [
-        { value: 0, label: 'Ninguno' },
+        { value: 0, label: '2,000 Comprobantes (Base)' },
+        { value: 5000, label: '5,000 Comprobantes Adicionales' },
+        { value: 10000, label: '10,000 Comprobantes Adicionales' },
+        { value: 20000, label: '20,000 Comprobantes Adicionales' },
+        { value: 30000, label: '30,000 Comprobantes Adicionales' },
+        { value: 40000, label: '40,000 Comprobantes Adicionales' },
+        { value: 50000, label: '50,000 Comprobantes Adicionales' },
+        { value: 60000, label: '60,000 Comprobantes Adicionales' },
+        { value: 70000, label: '70,000 Comprobantes Adicionales' },
+        { value: 80000, label: '80,000 Comprobantes Adicionales' },
+        { value: 90000, label: '90,000 Comprobantes Adicionales' },
+        { value: 100000, label: '100,000 Comprobantes Adicionales' },
+        { value: 110000, label: '110,000 Comprobantes Adicionales' },
+        { value: 120000, label: '120,000 Comprobantes Adicionales' },
+        { value: 130000, label: '130,000 Comprobantes Adicionales' },
+        { value: 140000, label: '140,000 Comprobantes Adicionales' },
+        { value: 150000, label: '150,000 Comprobantes Adicionales' },
+        { value: 160000, label: '160,000 Comprobantes Adicionales' },
+        { value: 170000, label: '170,000 Comprobantes Adicionales' },
+        { value: 180000, label: '180,000 Comprobantes Adicionales' }
+    ];
+
+    const optionsWEB = [
+        { value: 0, label: '2,000 Comprobantes (Base)' },
+        { value: 500, label: '500 Comprobantes Adicionales' },
+        { value: 1000, label: '1,000 Comprobantes Adicionales' },
+        { value: 2000, label: '2,000 Comprobantes Adicionales' },
         { value: 5000, label: '5,000 Comprobantes Adicionales' },
         { value: 10000, label: '10,000 Comprobantes Adicionales' },
         { value: 20000, label: '20,000 Comprobantes Adicionales' },
@@ -23,23 +49,15 @@ export default function IntegrationsCalculator() {
         { value: 40000, label: '40,000 Comprobantes Adicionales' },
         { value: 50000, label: '50,000 Comprobantes Adicionales' },
         { value: 100000, label: '100,000 Comprobantes Adicionales' },
-        { value: 150000, label: '150,000 Comprobantes Adicionales' }
-    ];
-
-    const optionsWEB = [
-        { value: 0, label: 'Ninguno' },
-        { value: 500, label: '500 Comprobantes Adicionales' },
-        { value: 1000, label: '1,000 Comprobantes Adicionales' },
-        { value: 2000, label: '2,000 Comprobantes Adicionales' },
-        { value: 5000, label: '5,000 Comprobantes Adicionales' },
-        { value: 10000, label: '10,000 Comprobantes Adicionales' },
-        { value: 50000, label: '50,000 Comprobantes Adicionales' },
-        { value: 100000, label: '100,000 Comprobantes Adicionales' },
-        { value: 200000, label: '200,000 Comprobantes Adicionales' }
+        { value: 150000, label: '150,000 Comprobantes Adicionales' },
+        { value: 180000, label: '180,000 Comprobantes Adicionales' },
+        { value: 200000, label: '200,000 Comprobantes Adicionales' },
+        { value: 300000, label: '300,000 Comprobantes Adicionales' },
+        { value: 500000, label: '500,000 Comprobantes Adicionales' }
     ];
 
     const optionsUNLIMITED = [
-        { value: 0, label: 'Ninguno' },
+        { value: 0, label: '15,000 Comprobantes (Base)' },
         { value: 500, label: '500 Comprobantes Extra' },
         { value: 1000, label: '1,000 Comprobantes Extra' },
         { value: 5000, label: '5,000 Comprobantes Extra' },
@@ -57,7 +75,7 @@ export default function IntegrationsCalculator() {
     ];
 
     const optionsACCOUNTING = [
-        { value: 0, label: 'Ninguno' },
+        { value: 0, label: '1,250 Docs / mes (Base)' },
         { value: 125, label: '125 Docs Extra / mes' },
         { value: 250, label: '250 Docs Extra / mes' },
         { value: 500, label: '500 Docs Extra / mes' },
@@ -212,7 +230,7 @@ Total: ${quote.summary.total_docs.toLocaleString()} Docs
                         <p className="text-sm text-blue-800 leading-relaxed">
                             {type === 'UNLIMITED' && 'El plan ilimitado incluye 15,000 comprobantes base anuales.'}
                             {type === 'ACCOUNTING' && 'El plan contable incluye 1,250 comprobantes base por mes.'}
-                            {(type === 'API' || type === 'WEB') && 'El Plan Base de Integración ($100) es obligatorio e incluye 2,000 comprobantes anuales.'}
+                            {(type === 'API' || type === 'WEB') && 'El Plan Base de Integración ($150) es obligatorio e incluye 2,000 comprobantes anuales.'}
                         </p>
                     </div>
                 </Card>

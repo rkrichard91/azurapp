@@ -60,7 +60,10 @@ export default function NewSale() {
 
             // Verificar plan
             cart.setSelectedPlanId(prev => {
-                if (prev && !products.find(p => p.id === prev)) return "";
+                if (prev && !products.find(p => p.id === prev)) {
+                    cart.setSelectedPlanPriceId("");
+                    return "";
+                }
                 return prev;
             });
         }
@@ -118,6 +121,7 @@ export default function NewSale() {
                                     value={cart.selectedPlanId}
                                     onChange={(e) => {
                                         cart.setSelectedPlanId(e.target.value);
+                                        cart.setSelectedPlanPriceId("");
                                         cart.setPlanMonths(1);
                                     }}
                                     className="w-full p-4 bg-slate-50 border border-slate-200 rounded-lg appearance-none text-slate-700 font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
@@ -129,6 +133,22 @@ export default function NewSale() {
                                 </select>
                                 <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">▼</div>
                             </div>
+
+                            {/* SELECTOR DE VIGENCIA SI APLICA */}
+                            {cart.selectedPlanId && !planProducts.find(p => p.id === cart.selectedPlanId)?.name.toUpperCase().includes("TRANSICI") && (
+                                <div className="relative w-48 animate-in fade-in slide-in-from-left-2">
+                                    <select
+                                        value={cart.selectedPlanPriceId || (planProducts.find(p => p.id === cart.selectedPlanId)?.prices?.[0]?.id || '')}
+                                        onChange={(e) => cart.setSelectedPlanPriceId(e.target.value)}
+                                        className="w-full p-4 bg-slate-50 border border-slate-200 rounded-lg appearance-none text-slate-700 font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                    >
+                                        {planProducts.find(p => p.id === cart.selectedPlanId)?.prices?.map(pr => (
+                                            <option key={pr.id} value={pr.id}>{pr.duration_label}</option>
+                                        ))}
+                                    </select>
+                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">▼</div>
+                                </div>
+                            )}
 
                             {planProducts.find(p => p.id === cart.selectedPlanId)?.name.toUpperCase().includes("TRANSICI") && (
                                 <div className="w-24">

@@ -7,6 +7,7 @@ import { IVA_RATE, EMISSION_POINT_TIERS } from '../constants';
 export function useCart({ planProducts, signatureProducts, moduleProducts, emissionPointProduct, signatureOptions }) {
     // Selecciones
     const [selectedPlanId, setSelectedPlanId] = useState("");
+    const [selectedPlanPriceId, setSelectedPlanPriceId] = useState("");
     const [planMonths, setPlanMonths] = useState(1); // Nuevo estado para meses del plan
     const [emissionPoints, setEmissionPoints] = useState(0);
     const [selectedSignatures, setSelectedSignatures] = useState([]);
@@ -35,7 +36,13 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
         if (selectedPlanId) {
             const plan = planProducts.find(p => p.id === selectedPlanId);
             if (plan) {
-                const priceObj = plan.prices ? plan.prices[0] : null;
+                let priceObj = null;
+                if (selectedPlanPriceId) {
+                    priceObj = plan.prices?.find(pr => pr.id === selectedPlanPriceId);
+                }
+                if (!priceObj) {
+                    priceObj = plan.prices ? plan.prices[0] : null;
+                }
                 const quantity = plan.name.toUpperCase().includes("TRANSICI") ? planMonths : 1;
 
                 items.push({
@@ -127,7 +134,7 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
         }
 
         return items;
-    }, [selectedPlanId, planMonths, selectedSignatures, selectedModules, emissionPoints, planProducts, signatureProducts, moduleProducts, emissionPointProduct]);
+    }, [selectedPlanId, selectedPlanPriceId, planMonths, selectedSignatures, selectedModules, emissionPoints, planProducts, signatureProducts, moduleProducts, emissionPointProduct]);
 
     // Totales
     const subtotal = cartItems.reduce((acc, item) => acc + item.total, 0);
@@ -180,6 +187,7 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
     const handleRemoveItem = (item) => {
         if (item.type === 'PLAN') {
             setSelectedPlanId("");
+            setSelectedPlanPriceId("");
             setPlanMonths(1);
         }
         if (item.type === 'SIGNATURE') {
@@ -226,6 +234,7 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
     const handleClear = () => {
         if (window.confirm("¿Borrar toda la cotización?")) {
             setSelectedPlanId("");
+            setSelectedPlanPriceId("");
             setPlanMonths(1);
             setSelectedSignatures([]);
             setSelectedModules([]);
@@ -236,6 +245,7 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
     return {
         // Estado
         selectedPlanId, setSelectedPlanId,
+        selectedPlanPriceId, setSelectedPlanPriceId,
         planMonths, setPlanMonths,
         emissionPoints, setEmissionPoints,
         selectedSignatures, setSelectedSignatures,

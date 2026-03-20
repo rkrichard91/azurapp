@@ -8,7 +8,7 @@ INSERT INTO public.categories (code, name) VALUES
 ('MODULE', 'Módulo Adicional'),
 ('INTEGRATION', 'Integración y API');
 
--- B. Insertar PLAN BASE DE INTEGRACIÓN ($100 / 2000 docs)
+-- B. Insertar PLAN BASE DE INTEGRACIÓN ($150 / 2000 docs)
 DO $$
 DECLARE 
     cat_int INT;
@@ -25,7 +25,7 @@ BEGIN
 
     -- Precio Base
     INSERT INTO public.prices (product_id, channel_id, duration_label, price)
-    VALUES (prod_id, chan_azur, '1 AÑO', 100.00);
+    VALUES (prod_id, chan_azur, '1 AÑO', 150.00);
 END $$;
 
 -- C. Insertar Paquetes Adicionales (Datos del Excel)
