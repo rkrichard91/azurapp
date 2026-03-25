@@ -101,6 +101,12 @@ export default function IntegrationsCalculator() {
         }
     };
 
+    const handleReset = () => {
+        setType('API');
+        setQuantity(0);
+        setCycle('ANNUAL');
+    };
+
     useEffect(() => {
         async function runCalc() {
             setLoading(true);
@@ -301,6 +307,13 @@ Total: ${quote.summary.total_docs.toLocaleString()} Docs
                                 <Copy size={18} />
                                 Copiar al Portapapeles
                             </Button>
+
+                            <button 
+                                onClick={handleReset} 
+                                className="w-full mt-3 py-3 rounded-lg font-semibold text-red-600 bg-white border border-red-200 hover:bg-red-50 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                            >
+                                Limpiar Cotización
+                            </button>
                         </div>
                     )}
                 </Card>
