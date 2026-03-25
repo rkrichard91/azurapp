@@ -96,14 +96,22 @@ export async function calculateIntegrationQuote(type, quantity, cycle = 'ANNUAL'
             addMonthly = tier ? tier.price : 0;
         }
 
-        // Multiplicador de ciclo
-        let multiplier = 1;
+        // Precios base fijos para igualar a Venta Nueva
+        const CYCLE_BASE_PRICES = {
+            'MONTHLY': 25.00,
+            'QUARTERLY': 72.75,
+            'SEMIANNUAL': 141.00,
+            'ANNUAL': 260.00
+        };
+
         let cycleName = "Mensual";
+        let multiplier = 1;
+
         if (cycle === 'QUARTERLY') { multiplier = 3; cycleName = "Trimestral"; }
         if (cycle === 'SEMIANNUAL') { multiplier = 6; cycleName = "Semestral"; }
         if (cycle === 'ANNUAL') { multiplier = 12; cycleName = "Anual"; }
 
-        basePrice = baseMonthly * multiplier;
+        basePrice = CYCLE_BASE_PRICES[cycle] || 25.00;
         additionalPrice = addMonthly * multiplier;
 
         baseDocs = baseDocsMonthly;

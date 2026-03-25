@@ -20,7 +20,15 @@ export function useProducts(canalSeleccionado) {
     }, [canalSeleccionado]);
 
     // Productos categorizados
-    const planProducts = useMemo(() => products.filter(p => p.category?.code === 'PLAN'), [products]);
+    const planProducts = useMemo(() => {
+        return products
+            .filter(p => p.category?.code === 'PLAN')
+            .sort((a, b) => {
+                const priceA = a.prices && a.prices.length > 0 ? a.prices[0].price : 0;
+                const priceB = b.prices && b.prices.length > 0 ? b.prices[0].price : 0;
+                return priceA - priceB;
+            });
+    }, [products]);
     const signatureProducts = useMemo(() => products.filter(p => p.category?.code === 'SIGNATURE'), [products]);
     const moduleProducts = useMemo(() => products.filter(p => p.category?.code === 'MODULE'), [products]);
     const emissionPointProduct = useMemo(() => products.find(p => p.name === 'Establecimiento Adicional' || p.name === 'Punto de venta'), [products]);
