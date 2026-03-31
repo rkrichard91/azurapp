@@ -375,9 +375,9 @@ BEGIN
     INSERT INTO products (name, description, category_id) VALUES ('Importar factura masiva', 'Módulo de importación', cat_mod_id) RETURNING id INTO prod_id;
     INSERT INTO prices (product_id, channel_id, price, duration_label) VALUES (prod_id, chan_azur_id, 20.00, 'PAGO ÚNICO'), (prod_id, chan_local_id, 20.00, 'PAGO ÚNICO'), (prod_id, chan_web_id, 20.00, 'PAGO ÚNICO');
 
-    -- Plan Integración (Base $150 / 2000 docs) se maneja con lógica especial, pero lo agregamos como referencia
-    INSERT INTO products (name, description, category_id) VALUES ('Plan Integración (Base)', 'Incluye 2000 documentos', cat_mod_id) RETURNING id INTO prod_id;
-    INSERT INTO prices (product_id, channel_id, price, duration_label) VALUES (prod_id, chan_azur_id, 150.00, '1 AÑO'), (prod_id, chan_local_id, 150.00, '1 AÑO'), (prod_id, chan_web_id, 150.00, '1 AÑO');
+    -- Plan Integración (Base $100 / 2000 docs) se maneja con lógica especial, pero lo agregamos como referencia
+    INSERT INTO products (code, name, description, category_id, features) VALUES ('INT-BASE', 'Plan Base de Integración API/Web', 'Obligatorio para conexiones externas', cat_int_id, '{"Comprobantes mensuales": "2000/año", "Actualizaciones": true, "Soporte": true, "Documentación API": true, "Webhooks": true}') RETURNING id INTO prod_id;
+    INSERT INTO prices (product_id, channel_id, price, duration_label) VALUES (prod_id, chan_azur_id, 100.00, '1 AÑO'), (prod_id, chan_local_id, 100.00, '1 AÑO'), (prod_id, chan_web_id, 100.00, '1 AÑO');
 
 END $do$;
 

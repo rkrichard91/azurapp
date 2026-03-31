@@ -3,7 +3,7 @@ import { IVA_RATE } from '../constants';
 
 // Regla de Negocio: Valores Base
 const BASE_CONFIG = {
-    price: 150.00,
+    price: 100.00,
     docs: 2000,
     name: "Plan Base Integración"
 };
@@ -133,7 +133,7 @@ export async function calculateIntegrationQuote(type, quantity, cycle = 'ANNUAL'
 
     } else {
         // Lógica API / WEB
-        basePrice = BASE_CONFIG.price;
+        basePrice = type === 'WEB' ? 150.00 : 100.00;
         baseDocs = BASE_CONFIG.docs;
         planName = `Integración ${type}`;
 

@@ -236,7 +236,8 @@ Total: ${quote.summary.total_docs.toLocaleString()} Docs
                         <p className="text-sm text-blue-800 leading-relaxed">
                             {type === 'UNLIMITED' && 'El plan ilimitado incluye 15,000 comprobantes base anuales.'}
                             {type === 'ACCOUNTING' && 'El plan contable incluye 1,250 comprobantes base por mes.'}
-                            {(type === 'API' || type === 'WEB') && 'El Plan Base de Integración ($150) es obligatorio e incluye 2,000 comprobantes anuales.'}
+                            {type === 'API' && 'El Plan Base de Integración ($100 + IVA) es obligatorio e incluye 2,000 comprobantes anuales.'}
+                            {type === 'WEB' && 'El Plan Base de Integración + Uso Web ($150 + IVA) es obligatorio e incluye 2,000 comprobantes anuales.'}
                         </p>
                     </div>
                 </Card>
@@ -308,8 +309,8 @@ Total: ${quote.summary.total_docs.toLocaleString()} Docs
                                 Copiar al Portapapeles
                             </Button>
 
-                            <button 
-                                onClick={handleReset} 
+                            <button
+                                onClick={handleReset}
                                 className="w-full mt-3 py-3 rounded-lg font-semibold text-red-600 bg-white border border-red-200 hover:bg-red-50 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                             >
                                 Limpiar Cotización
