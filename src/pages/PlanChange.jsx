@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Check, X, Copy, Info, AlertTriangle } from 'lucide-react';
+import { Check, X, Copy, Info, AlertTriangle, Save } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { fetchProductsByChannel } from '../services/pricingService';
 import { formatCurrency, roundToTwo, formatDate } from '../utils/format';
 import { IVA_RATE, FEATURE_ORDER, FEATURE_DISPLAY_NAMES } from '../constants';
+import SaleRegistrationModal from '../components/sale/SaleRegistrationModal';
 
 export default function PlanChange() {
     const { canalSeleccionado } = useApp();
@@ -23,6 +24,7 @@ export default function PlanChange() {
     });
     const [ranOut, setRanOut] = useState(false);
     const [copyNotification, setCopyNotification] = useState('');
+    const [isSaleModalOpen, setIsSaleModalOpen] = useState(false);
 
     // Fetch Data
     useEffect(() => {
@@ -397,6 +399,14 @@ export default function PlanChange() {
                                             <p className="text-xs text-slate-500 mt-3 text-center">Este saldo puede ser utilizado en futuras renovaciones o compras.</p>
                                         </div>
                                     )}
+
+                                    <button
+                                        onClick={() => setIsSaleModalOpen(true)}
+                                        className="w-full mt-4 flex items-center justify-center gap-2 py-3 rounded-lg font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+                                    >
+                                        <Save size={18} />
+                                        Registrar Cambio de Plan
+                                    </button>
                                 </div>
                             )}
                         </div>
@@ -474,6 +484,19 @@ export default function PlanChange() {
                     )}
                 </>
             )}
+
+            <SaleRegistrationModal 
+                isOpen={isSaleModalOpen}
+                onClose={() => setIsSaleModalOpen(false)}
+                total={calculation?.difference > 0 ? calculation.totalAPagar : 0}
+                cartItems={[{
+                    item: `Cambio de Plan: ${currentPlanName} -> ${newPlanName}`, 
+                    price: calculation?.difference > 0 ? calculation.totalAPagar : 0, 
+                    desc: ranOut ? 'Cliente agotó comprobantes' : 'Cambio regular'
+                }]}
+                planAmount={calculation?.difference > 0 ? calculation.totalAPagar : 0}
+                description={`Cambio de Plan: ${currentPlanName} -> ${newPlanName}`}
+            />
         </div>
     );
 }

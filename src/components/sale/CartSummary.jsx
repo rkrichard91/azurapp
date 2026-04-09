@@ -1,11 +1,25 @@
-import React from 'react';
-import { Copy, Trash2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { Copy, Trash2, Database } from 'lucide-react';
 import { formatCurrency } from '../../utils/format';
+import SaleRegistrationModal from './SaleRegistrationModal';
 
 /**
  * Resumen lateral del carrito: desglose, totales, y botones de acción.
  */
 export default function CartSummary({ cartItems, subtotal, iva, total, handleCopy, handleClear }) {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    // Calc amounts for reporting
+    let planAmount = 0;
+    let signatureAmount = 0;
+    let moduleAmount = 0;
+
+    cartItems.forEach(item => {
+        if (item.type === 'PLAN') planAmount += item.total;
+        if (item.type === 'SIGNATURE') signatureAmount += item.total;
+        if (item.type === 'MODULE' || item.type === 'EXTRA') moduleAmount += item.total;
+    });
+
     return (
         <div className="md:col-span-1">
             <div className="sticky top-28 space-y-6">
@@ -52,6 +66,13 @@ export default function CartSummary({ cartItems, subtotal, iva, total, handleCop
 
                 {/* Botones */}
                 <div className="space-y-2">
+                    <button 
+                        onClick={() => setIsModalOpen(true)} 
+                        disabled={cartItems.length === 0}
+                        className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <Database className="w-5 h-5" /> Registrar Venta
+                    </button>
                     <button onClick={() => handleCopy('RESUMEN')} className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors">
                         <Copy className="w-4 h-4" /> Copiar Resumen
                     </button>
@@ -62,6 +83,18 @@ export default function CartSummary({ cartItems, subtotal, iva, total, handleCop
                         <Trash2 className="w-4 h-4" /> Borrar Todo
                     </button>
                 </div>
+
+                {/* Modal */}
+                <SaleRegistrationModal 
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    cartItems={cartItems}
+                    total={total}
+                    planAmount={planAmount}
+                    signatureAmount={signatureAmount}
+                    moduleAmount={moduleAmount}
+                    description={cartItems.map(i => i.name).join(' + ')}
+                />
 
             </div>
         </div>

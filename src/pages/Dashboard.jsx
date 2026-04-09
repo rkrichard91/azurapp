@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card } from '../components/ui/Card';
-import { Calculator, ShoppingCart, RefreshCw, Box } from 'lucide-react';
+import { Calculator, ShoppingCart, RefreshCw, Box, TrendingUp } from 'lucide-react';
 
 export default function Dashboard() {
     const tools = [
@@ -11,6 +11,14 @@ export default function Dashboard() {
             icon: ShoppingCart,
             color: "bg-emerald-500",
             link: "/new-sale",
+            active: true
+        },
+        {
+            title: "Control de Ventas",
+            desc: "Registro y métricas CRM de ventas realizadas.",
+            icon: TrendingUp,
+            color: "bg-purple-600",
+            link: "/sales",
             active: true
         },
         {

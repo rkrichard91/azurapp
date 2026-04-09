@@ -4,6 +4,7 @@ import Dashboard from './pages/Dashboard';
 import NewSale from './pages/NewSale';
 import PlanChange from './pages/PlanChange';
 import IntegrationsCalculator from './pages/Integrations';
+import SalesControl from './pages/SalesControl';
 import Login from './pages/Login';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import MainLayout from './layouts/MainLayout';
@@ -25,6 +26,7 @@ function App() {
                   <Route path="/new-sale" element={<NewSale />} />
                   <Route path="/plan-change" element={<PlanChange />} />
                   <Route path="/integrations" element={<IntegrationsCalculator />} />
+                  <Route path="/sales" element={<SalesControl />} />
                 </Routes>
               </MainLayout>
             </ProtectedRoute>

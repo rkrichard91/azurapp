@@ -3,7 +3,8 @@ import { calculateIntegrationQuote } from '../services/integrationService';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Select } from '../components/ui/Select';
-import { CheckCircle2, AlertCircle, Copy, FileText } from 'lucide-react';
+import { CheckCircle2, AlertCircle, Copy, FileText, Save } from 'lucide-react';
+import SaleRegistrationModal from '../components/sale/SaleRegistrationModal';
 
 export default function IntegrationsCalculator() {
     const [type, setType] = useState('API');
@@ -12,6 +13,7 @@ export default function IntegrationsCalculator() {
     const [quote, setQuote] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [isSaleModalOpen, setIsSaleModalOpen] = useState(false);
 
     // Opciones hardcoded (v2.0 MVP)
     const optionsAPI = [
@@ -310,6 +312,14 @@ Total: ${quote.summary.total_docs.toLocaleString()} Docs
                             </Button>
 
                             <button
+                                onClick={() => setIsSaleModalOpen(true)}
+                                className="w-full mt-3 flex items-center justify-center gap-2 py-3 rounded-lg font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+                            >
+                                <Save size={18} />
+                                Registrar Venta
+                            </button>
+
+                            <button
                                 onClick={handleReset}
                                 className="w-full mt-3 py-3 rounded-lg font-semibold text-red-600 bg-white border border-red-200 hover:bg-red-50 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                             >
@@ -319,6 +329,15 @@ Total: ${quote.summary.total_docs.toLocaleString()} Docs
                     )}
                 </Card>
             </div>
+
+            <SaleRegistrationModal 
+                isOpen={isSaleModalOpen}
+                onClose={() => setIsSaleModalOpen(false)}
+                total={quote ? quote.summary.total : 0}
+                cartItems={quote ? quote.breakdown : []}
+                moduleAmount={quote ? quote.summary.total : 0}
+                description={`Paquete Adicional (${type})`}
+            />
         </>
     );
 }
