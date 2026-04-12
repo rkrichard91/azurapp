@@ -1,7 +1,7 @@
 -- 1. Canales de Venta (Para segmentar precios)
 CREATE TABLE public.channels (
     id SERIAL PRIMARY KEY,
-    code VARCHAR(20) UNIQUE NOT NULL, -- 'AZUR', 'LOCAL', 'WEB'
+    code VARCHAR(20) UNIQUE NOT NULL, -- 'AZUR', 'LOCAL'
     name VARCHAR(50) NOT NULL
 );
 

@@ -25,7 +25,8 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
         isRenewal: false,
         shipping: "Retiro en Oficina - $0.00 (IVA Incl.)",
         discount: 0,
-        idType: "cedula" // 'cedula' | 'ruc'
+        idType: "cedula", // 'cedula' | 'ruc'
+        gestion: "Gestión Vendedor" // 'Gestión Vendedor' | 'Autogestión'
     });
 
     // --- Cart Items derivados ---
@@ -91,12 +92,13 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
                 items.push({
                     type: 'SIGNATURE',
                     _sigId: sig.id,
-                    name: `${baseName}${sig.isRenewal ? ' (Renovación)' : ''}${nameSuffix}`,
+                    name: `${baseName}${sig.isRenewal ? ' (Renovación)' : ''}${nameSuffix} - ${sig.gestion}`,
                     quantity: sig.quantity,
                     unitPrice,
                     total,
                     duration: priceObj ? priceObj.duration_label : '',
-                    details: sig.shipping ? `Envío: ${sig.shipping}` : ''
+                    details: sig.shipping ? `Envío: ${sig.shipping}` : '',
+                    gestion: sig.gestion
                 });
             }
         });
@@ -169,7 +171,8 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
                 isRenewal: false,
                 shipping: "Retiro en Oficina - $0.00 (IVA Incl.)",
                 discount: 0,
-                idType: "cedula"
+                idType: "cedula",
+                gestion: "Gestión Vendedor"
             });
         }
         setShowSignatureModal(true);

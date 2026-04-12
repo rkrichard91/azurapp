@@ -11,7 +11,9 @@ CREATE TABLE public.sales (
     sale_type VARCHAR(20) NOT NULL CHECK (sale_type IN ('NUEVA', 'RENOVACION')),
     status VARCHAR(20) NOT NULL CHECK (status IN ('EN GESTIÓN', 'VENTA CERRADA', 'DESCARTADA')),
     description VARCHAR(255),
-    channel VARCHAR(20) NOT NULL, -- 'AZUR', 'LOCAL', 'WEB'
+    channel VARCHAR(20) NOT NULL, -- 'AZUR', 'LOCAL'
+    origin VARCHAR(100), -- Ej. Local Samanes, Página Web
+    management_type VARCHAR(50) DEFAULT 'N/A', -- 'Gestión Vendedor', 'Autogestión', 'N/A'
     total_amount DECIMAL(10, 2) NOT NULL DEFAULT 0,
     plan_amount DECIMAL(10, 2) DEFAULT 0,
     signature_amount DECIMAL(10, 2) DEFAULT 0,

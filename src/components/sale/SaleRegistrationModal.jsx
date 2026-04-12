@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { X, Save } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Save, Search, Loader2 } from 'lucide-react';
 import { salesService } from '../../services/salesService';
 import { useApp } from '../../context/AppContext';
 
@@ -15,8 +15,12 @@ export default function SaleRegistrationModal({ isOpen, onClose, cartItems, tota
         status: 'EN GESTIÓN',
         description: '',
         next_contact_date: '',
-        total_amount: 0
+        total_amount: 0,
+        origin: '',
+        management_type: 'N/A'
     });
+    
+    const [isSearchingSRI, setIsSearchingSRI] = useState(false);
 
     // Cargar datos iniciales cuando se abre el modal
     React.useEffect(() => {
@@ -30,7 +34,9 @@ export default function SaleRegistrationModal({ isOpen, onClose, cartItems, tota
                 status: initialData?.status || 'EN GESTIÓN',
                 description: initialData?.description || description || '',
                 next_contact_date: initialData?.next_contact_date || '',
-                total_amount: initialData?.total_amount || total || 0
+                total_amount: initialData?.total_amount || total || 0,
+                origin: initialData?.origin || '',
+                management_type: initialData?.management_type || 'N/A'
             });
             setError(null);
         }
@@ -58,29 +64,87 @@ export default function SaleRegistrationModal({ isOpen, onClose, cartItems, tota
                 ? formData.next_contact_date 
                 : null;
 
-            const saleData = {
-                ...formData,
-                next_contact_date: finalContactDate,
-                channel: initialData?.channel || canalSeleccionado,
-                total_amount: isManual ? parseFloat(formData.total_amount) || 0 : (initialData?.total_amount || total),
-                plan_amount: initialData?.plan_amount ?? planAmount ?? 0,
-                signature_amount: initialData?.signature_amount ?? signatureAmount ?? 0,
-                module_amount: initialData?.module_amount ?? moduleAmount ?? 0,
-                product_details: initialData?.product_details || cartItems || []
-            };
-
             if (initialData && initialData.id) {
+                // UPDATE MODE
+                const saleData = {
+                    ...formData,
+                    next_contact_date: finalContactDate,
+                    channel: initialData.channel || canalSeleccionado,
+                    total_amount: parseFloat(formData.total_amount) || initialData.total_amount || 0,
+                    plan_amount: initialData.plan_amount ?? 0,
+                    signature_amount: initialData.signature_amount ?? 0,
+                    module_amount: initialData.module_amount ?? 0,
+                    product_details: initialData.product_details || []
+                };
                 await salesService.updateSale(initialData.id, saleData);
                 alert("Venta actualizada exitosamente!");
-            } else {
+            } else if (isManual || !cartItems || cartItems.length === 0) {
+                // MANUAL / EMPTY CART MODE
+                const saleData = {
+                    ...formData,
+                    next_contact_date: finalContactDate,
+                    channel: canalSeleccionado,
+                    total_amount: parseFloat(formData.total_amount) || 0,
+                    plan_amount: 0,
+                    signature_amount: 0,
+                    module_amount: 0,
+                    product_details: []
+                };
                 await salesService.createSale(saleData);
                 alert("Venta registrada exitosamente!");
+            } else {
+                // AUTOMATIC CART MODE - SPLIT ITEMS
+                const promises = cartItems.map(item => {
+                    let desc = `${item.quantity}x ${item.name} (${item.duration})`;
+                    if (item.details) desc += ` - ${item.details}`;
+                    if (formData.description && formData.description.trim() !== '') {
+                        desc += ` | Nota: ${formData.description}`;
+                    }
+
+                    const itemData = {
+                        ...formData,
+                        description: desc,
+                        next_contact_date: finalContactDate,
+                        channel: canalSeleccionado,
+                        total_amount: item.total,
+                        plan_amount: item.type === 'PLAN' ? item.total : 0,
+                        signature_amount: item.type === 'SIGNATURE' ? item.total : 0,
+                        module_amount: ['MODULE', 'EXTRA'].includes(item.type) ? item.total : 0,
+                        product_details: [item],
+                        management_type: item.type === 'SIGNATURE' ? (item.gestion || 'Gestión Vendedor') : 'N/A'
+                    };
+                    return salesService.createSale(itemData);
+                });
+                
+                await Promise.all(promises);
+                alert("Ventas registradas exitosamente de manera individual!");
             }
             onClose(); // Close modal on success
         } catch (err) {
-            setError("Ocurrió un error al guardar. Verifica la conexión.");
+            setError(err.message || 'Error al guardar la venta');
         } finally {
             setSaving(false);
+        }
+    };
+
+    const handleSearchSRI = async () => {
+        if (!formData.client_ruc || formData.client_ruc.trim() === '') return;
+        
+        setIsSearchingSRI(true);
+        setError('');
+        
+        try {
+            const razonSocial = await salesService.querySRI(formData.client_ruc);
+            if (razonSocial) {
+                setFormData(prev => ({
+                    ...prev,
+                    client_name: razonSocial
+                }));
+            }
+        } catch (err) {
+            setError(err.message || "Error consultando el SRI. Verifique el número provisto.");
+        } finally {
+            setIsSearchingSRI(false);
         }
     };
 
@@ -106,11 +170,22 @@ export default function SaleRegistrationModal({ isOpen, onClose, cartItems, tota
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-xs font-bold text-slate-500 mb-1">RUC / Cédula</label>
-                            <input 
-                                name="client_ruc" value={formData.client_ruc} onChange={handleChange}
-                                className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="17xxxxxxxxx001"
-                            />
+                            <div className="relative">
+                                <input 
+                                    name="client_ruc" value={formData.client_ruc} onChange={handleChange}
+                                    className="w-full pl-3 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Ej: 0951091727"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={handleSearchSRI}
+                                    disabled={isSearchingSRI || !formData.client_ruc}
+                                    className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-blue-100 text-blue-600 rounded flex items-center justify-center hover:bg-blue-200 transition-colors disabled:opacity-50"
+                                    title="Buscar Razón Social en el SRI"
+                                >
+                                    {isSearchingSRI ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />}
+                                </button>
+                            </div>
                         </div>
                         <div>
                             <label className="block text-xs font-bold text-slate-500 mb-1">Nombre / Razón Social</label>
@@ -167,6 +242,22 @@ export default function SaleRegistrationModal({ isOpen, onClose, cartItems, tota
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
+                            <label className="block text-xs font-bold text-slate-500 mb-1">Origen de la Venta</label>
+                            <input 
+                                list="origin-options"
+                                name="origin" value={formData.origin} onChange={handleChange}
+                                className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="Ej: Local Samanes, Página Web..."
+                            />
+                            <datalist id="origin-options">
+                                <option value="Local Samanes" />
+                                <option value="Local Garzota" />
+                                <option value="Página Web" />
+                                <option value="Facebook" />
+                                <option value="Instagram" />
+                            </datalist>
+                        </div>
+                        <div>
                             <label className="block text-xs font-bold text-slate-500 mb-1">Descripción de la Venta</label>
                             <input 
                                 name="description" value={formData.description} onChange={handleChange}
@@ -174,6 +265,25 @@ export default function SaleRegistrationModal({ isOpen, onClose, cartItems, tota
                                 placeholder="Ej: Plan Básico + Firma Electrónica"
                             />
                         </div>
+                    </div>
+
+                    {isManual && (
+                        <div className="grid grid-cols-1 gap-4">
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 mb-1">Clasificación / Gestión</label>
+                                <select 
+                                    name="management_type" value={formData.management_type} onChange={handleChange}
+                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 font-bold"
+                                >
+                                    <option value="N/A">N/A</option>
+                                    <option value="Gestión Vendedor">Gestión Vendedor</option>
+                                    <option value="Autogestión">Autogestión</option>
+                                </select>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="grid grid-cols-1 gap-4">
                         {formData.status === 'EN GESTIÓN' && (
                             <div>
                                 <label className="block text-xs font-bold text-amber-600 mb-1">Fecha de Próximo Seguimiento</label>

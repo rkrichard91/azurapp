@@ -1,6 +1,6 @@
 -- A. Insertar Estructura Base
 INSERT INTO public.channels (code, name) VALUES 
-('AZUR', 'Canal Azur'), ('LOCAL', 'Canal Local'), ('WEB', 'Canal Web');
+('AZUR', 'Canal Azur'), ('LOCAL', 'Canal Local');
 
 INSERT INTO public.categories (code, name) VALUES 
 ('PLAN', 'Plan de Facturación'), 

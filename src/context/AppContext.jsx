@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState } from 'react';
 const AppContext = createContext();
 
 export function AppProvider({ children }) {
-    // Estado global para el canal de venta: 'AZUR', 'LOCAL', 'WEB'
+    // Estado global para el canal de venta: 'AZUR', 'LOCAL'
     const [canalSeleccionado, setCanalSeleccionado] = useState('AZUR');
 
     const value = {

@@ -83,7 +83,7 @@ export default function NewSale() {
                     </div>
 
                     <div className="flex bg-slate-100 p-1 rounded-lg">
-                        {['AZUR', 'LOCAL', 'WEB'].map(c => (
+                        {['AZUR', 'LOCAL'].map(c => (
                             <button
                                 key={c}
                                 onClick={() => setCanalSeleccionado(c)}

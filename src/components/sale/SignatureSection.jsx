@@ -194,6 +194,35 @@ export default function SignatureSection({
                                 </select>
                             </div>
 
+                            {/* Tipo de Gestión */}
+                            <div className="bg-emerald-50 p-3 rounded-lg border border-emerald-100 mb-4">
+                                <span className="text-sm font-bold text-slate-700 block mb-2">Clasificación de la Venta (Firma):</span>
+                                <div className="flex gap-4">
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                        <input
+                                            type="radio"
+                                            name="gestionType"
+                                            value="Gestión Vendedor"
+                                            checked={sigForm.gestion === 'Gestión Vendedor'}
+                                            onChange={(e) => setSigForm({ ...sigForm, gestion: e.target.value })}
+                                            className="text-emerald-600 focus:ring-emerald-500"
+                                        />
+                                        <span className="text-slate-700">Gestión Vendedor</span>
+                                    </label>
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                        <input
+                                            type="radio"
+                                            name="gestionType"
+                                            value="Autogestión"
+                                            checked={sigForm.gestion === 'Autogestión'}
+                                            onChange={(e) => setSigForm({ ...sigForm, gestion: e.target.value })}
+                                            className="text-emerald-600 focus:ring-emerald-500"
+                                        />
+                                        <span className="text-slate-700">Autogestión</span>
+                                    </label>
+                                </div>
+                            </div>
+
                             {/* Envío del Token */}
                             {(() => {
                                 const prodName = signatureProducts.find(p => p.id === sigForm.productId)?.name || "";

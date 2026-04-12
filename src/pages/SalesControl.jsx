@@ -18,6 +18,8 @@ export default function SalesControl() {
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('TODOS');
     const [filterType, setFilterType] = useState('TODOS');
+    const [filterOrigin, setFilterOrigin] = useState('');
+    const [filterManagement, setFilterManagement] = useState('TODOS');
     const [dateFrom, setDateFrom] = useState('');
     const [dateTo, setDateTo] = useState('');
 
@@ -69,6 +71,15 @@ export default function SalesControl() {
             result = result.filter(s => s.sale_type === filterType);
         }
 
+        if (filterOrigin) {
+            const originTerm = filterOrigin.toLowerCase();
+            result = result.filter(s => s.origin && s.origin.toLowerCase().includes(originTerm));
+        }
+
+        if (filterManagement !== 'TODOS') {
+            result = result.filter(s => s.management_type === filterManagement);
+        }
+
         if (dateFrom) {
             const fromDate = new Date(dateFrom);
             fromDate.setHours(0, 0, 0, 0);
@@ -86,7 +97,7 @@ export default function SalesControl() {
 
         setFilteredSales(result);
         calculateStats(result);
-    }, [sales, searchTerm, filterStatus, filterType, dateFrom, dateTo]);
+    }, [sales, searchTerm, filterStatus, filterType, filterOrigin, filterManagement, dateFrom, dateTo]);
 
     const calculateStats = (data) => {
         const now = new Date();
@@ -160,14 +171,17 @@ export default function SalesControl() {
         setSearchTerm('');
         setFilterStatus('TODOS');
         setFilterType('TODOS');
+        setFilterOrigin('');
+        setFilterManagement('TODOS');
         setDateFrom('');
         setDateTo('');
     };
 
-    const totalFiltrado = filteredSales.reduce((sum, sale) => sum + (parseFloat(sale.total_amount) || 0), 0);
+    const recaudadoFiltrado = filteredSales.filter(s => s.status === 'VENTA CERRADA').reduce((sum, sale) => sum + (parseFloat(sale.total_amount) || 0), 0);
+    const pendienteFiltrado = filteredSales.filter(s => s.status === 'EN GESTIÓN').reduce((sum, sale) => sum + (parseFloat(sale.total_amount) || 0), 0);
 
     const handleExportCSV = () => {
-        const headers = ['Fecha', 'RUC/Cédula', 'Razón Social', 'Tipo', 'Estado', 'Monto', 'Seguimiento', 'Descripción'];
+        const headers = ['Fecha', 'Origen', 'RUC/Cédula', 'Razón Social', 'Tipo', 'Gestión', 'Estado', 'Monto', 'Seguimiento', 'Descripción'];
         const csvContent = [
             headers.join(','),
             ...filteredSales.map(s => {
@@ -175,9 +189,11 @@ export default function SalesControl() {
                 const escapeCSV = (str) => `"${(str || '').toString().replace(/"/g, '""')}"`;
                 return [
                     date,
+                    escapeCSV(s.origin),
                     escapeCSV(s.client_ruc),
                     escapeCSV(s.client_name),
                     s.sale_type,
+                    escapeCSV(s.management_type || 'N/A'),
                     s.status,
                     s.total_amount,
                     s.next_contact_date ? new Date(s.next_contact_date).toLocaleDateString('es-ES') : '',
@@ -363,6 +379,25 @@ export default function SalesControl() {
                             </select>
                         </div>
                         <div>
+                            <label className="block text-xs font-bold text-slate-500 mb-1">Origen (ej. Samanes)</label>
+                            <input 
+                                type="text"
+                                value={filterOrigin} 
+                                onChange={e => setFilterOrigin(e.target.value)} 
+                                className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                placeholder="Locales, web..." 
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 mb-1">Gestión</label>
+                            <select value={filterManagement} onChange={e => setFilterManagement(e.target.value)} className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="TODOS">Todos</option>
+                                <option value="Gestión Vendedor">Gestión Vendedor</option>
+                                <option value="Autogestión">Autogestión</option>
+                                <option value="N/A">N/A</option>
+                            </select>
+                        </div>
+                        <div>
                             <label className="block text-xs font-bold text-slate-500 mb-1">Desde</label>
                             <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                         </div>
@@ -384,7 +419,8 @@ export default function SalesControl() {
                         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                             <h2 className="text-lg font-bold text-slate-800">Reporte de Registros</h2>
                             <span className="text-sm bg-blue-100 text-blue-700 font-bold px-3 py-1 rounded-full w-fit">{filteredSales.length} items</span>
-                            <span className="text-sm bg-indigo-100 text-indigo-700 font-bold px-3 py-1 rounded-full w-fit">Recaudado (Total): {formatCurrency(totalFiltrado)}</span>
+                            <span className="text-sm bg-indigo-100 text-indigo-700 font-bold px-3 py-1 rounded-full w-fit">Recaudado: {formatCurrency(recaudadoFiltrado)}</span>
+                            <span className="text-sm bg-amber-100 text-amber-700 font-bold px-3 py-1 rounded-full w-fit">Pendiente: {formatCurrency(pendienteFiltrado)}</span>
                         </div>
                         <div className="flex items-center gap-3">
                             <button
@@ -412,9 +448,11 @@ export default function SalesControl() {
                                     <th className="p-4 font-semibold">RUC / Cédula</th>
                                     <th className="p-4 font-semibold">Razón Social</th>
                                     <th className="p-4 font-semibold">Tipo</th>
+                                    <th className="p-4 font-semibold">Origen</th>
+                                    <th className="p-4 font-semibold">Gestión</th>
                                     <th className="p-4 font-semibold">Descripción</th>
-                                    <th className="p-4 font-semibold">Monto</th>
-                                    <th className="p-4 font-semibold" style={{minWidth: "160px"}}>Estado</th>
+                                    <th className="p-4 font-semibold text-center">Monto</th>
+                                    <th className="p-4 font-semibold text-center" style={{minWidth: "160px"}}>Estado</th>
                                     <th className="p-4 font-semibold text-center">Acciones</th>
                                 </tr>
                             </thead>
@@ -459,10 +497,22 @@ export default function SalesControl() {
                                                         {sale.sale_type}
                                                     </span>
                                                 </td>
-                                                <td className="p-4 text-sm text-slate-600 max-w-xs truncate" title={sale.description || '-'}>
+                                                <td className="p-4 text-sm text-slate-600 max-w-[100px] truncate" title={sale.origin || '-'}>
+                                                    {sale.origin || '-'}
+                                                </td>
+                                                <td className="p-4">
+                                                    <span className={`text-[10px] font-bold px-2 py-1 rounded-md border ${
+                                                        !sale.management_type || sale.management_type === 'N/A' ? 'border-slate-200 text-slate-400 bg-slate-50' : 
+                                                        sale.management_type === 'Autogestión' ? 'border-blue-200 text-blue-700 bg-blue-50' : 
+                                                        'border-emerald-200 text-emerald-700 bg-emerald-50'
+                                                    }`}>
+                                                        {sale.management_type || 'N/A'}
+                                                    </span>
+                                                </td>
+                                                <td className="p-4 text-sm text-slate-600 max-w-[200px] truncate" title={sale.description || '-'}>
                                                     {sale.description || '-'}
                                                 </td>
-                                                <td className="p-4 font-bold text-slate-700">{formatCurrency(sale.total_amount)}</td>
+                                                <td className="p-4 text-center font-bold text-slate-900">{formatCurrency(sale.total_amount)}</td>
                                                 <td className="p-4">
                                                     <select 
                                                         value={sale.status} 

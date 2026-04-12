@@ -2,7 +2,7 @@ import { supabase } from './supabaseClient';
 
 /**
  * Fetch all products with their prices for a specific channel.
- * @param {string} channelCode - 'AZUR', 'LOCAL', or 'WEB'
+ * @param {string} channelCode - 'AZUR' o 'LOCAL'
  */
 export async function fetchProductsByChannel(channelCode) {
     // 1. Get Channel ID
