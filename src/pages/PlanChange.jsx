@@ -34,16 +34,21 @@ export default function PlanChange() {
                 const products = await fetchProductsByChannel(canalSeleccionado);
                 const plans = products.filter(p =>
                     p.category?.code === 'PLAN' &&
-                    !['PLAN ESENCIAL', 'PLAN TRANSICIÓN', 'PLAN CONTABLE', 'PLAN CONTABLE PRO'].includes(p.name)
+                    !['PLAN TRANSICIÓN', 'PLAN CONTABLE', 'PLAN CONTABLE PRO'].includes(p.name)
                 );
 
                 // Transform to map structure needed by component: { "PLAN NAME": { price: X, features: {} } }
                 const plansMap = {};
-                plans.forEach(p => {
-                    // Assuming price[0] is the 1 YEAR default price or use logic to find '1 AÑO'
+                
+                // Ordenar los planes de menor a mayor precio para que el Plan Esencial salga primero
+                const sortedPlans = plans.map(p => {
                     const defaultPrice = p.prices.find(pr => pr.duration_label === '1 AÑO')?.price || p.prices[0]?.price || 0;
+                    return { ...p, extractedPrice: defaultPrice };
+                }).sort((a, b) => a.extractedPrice - b.extractedPrice);
+
+                sortedPlans.forEach(p => {
                     plansMap[p.name] = {
-                        price: defaultPrice,
+                        price: p.extractedPrice,
                         features: p.features || {}
                     };
                 });
@@ -150,7 +155,8 @@ export default function PlanChange() {
             const newPlanPrice = newPlan.price;
             const newPlanPriceWithIva = formatCurrency(newPlanPrice * (1 + IVA_RATE));
             const newPlanComprobantes = newPlan.features['Comprobantes año'];
-            const option1Text = `OPCIÓN 1: Contratar un ${newPlanName} (${newPlanComprobantes} comprobantes anuales) que empiece desde el día de hoy ${todayStr} y le caduque el ${nextYearStr}. Tendría que pagar ${formatCurrency(newPlanPrice)} + IVA (${newPlanPriceWithIva} final).`;
+            const denominacionNuevo = newPlanName === 'PLAN ESENCIAL' ? 'facturas anuales' : 'comprobantes anuales';
+            const option1Text = `OPCIÓN 1: Contratar un ${newPlanName} (${newPlanComprobantes} ${denominacionNuevo}) que empiece desde el día de hoy ${todayStr} y le caduque el ${nextYearStr}. Tendría que pagar ${formatCurrency(newPlanPrice)} + IVA (${newPlanPriceWithIva} final).`;
 
             const totalAPagarFormatted = formatCurrency(calculation.totalAPagar);
             const baseImponibleFormatted = formatCurrency(calculation.baseImponible);
@@ -158,11 +164,12 @@ export default function PlanChange() {
             const oldComprobantes = parseInt(currentPlan.features['Comprobantes año']);
             const newComprobantes = parseInt(newPlan.features['Comprobantes año']);
             let diffComprobantesText = '';
+            const tipoComprobante = newPlanName === 'PLAN ESENCIAL' ? 'facturas' : 'comprobantes';
             if (!isNaN(oldComprobantes) && !isNaN(newComprobantes)) {
                 const diff = newComprobantes - oldComprobantes;
-                diffComprobantesText = ` y se le acreditarían la diferencia de comprobantes (${diff} comprobantes adicionales)`;
+                diffComprobantesText = ` y se le acreditarían la diferencia (${diff} ${tipoComprobante} adicionales)`;
             } else if (!isNaN(oldComprobantes) && (String(newPlan.features['Comprobantes año']).includes("∞") || String(newPlan.features['Comprobantes año']).includes("Ilimitado"))) {
-                diffComprobantesText = ` y ahora tendría comprobantes ilimitados`;
+                diffComprobantesText = ` y ahora tendría ${tipoComprobante} ilimitados`;
             }
 
             const option2Text = `OPCIÓN 2: Cambiarse del ${currentPlanName} que tiene actualmente al ${newPlanName}. De elegir esta opción, cancelaría la diferencia que son ${baseImponibleFormatted} + IVA (${totalAPagarFormatted} final)${diffComprobantesText}. La vigencia de su plan se mantiene desde ${originalStartDateStr} hasta el ${originalEndDateStr}.`;
@@ -210,7 +217,10 @@ export default function PlanChange() {
             const oldValue = currentFeatures[feature];
             const newValue = newFeatures[feature];
 
-            const displayName = FEATURE_DISPLAY_NAMES[feature] || feature;
+            let displayName = FEATURE_DISPLAY_NAMES[feature] || feature;
+            if (feature === 'Comprobantes año' && newPlanName === 'PLAN ESENCIAL') {
+                displayName = 'Facturas al año';
+            }
 
             if (JSON.stringify(oldValue) === JSON.stringify(newValue)) return;
 
@@ -454,7 +464,10 @@ export default function PlanChange() {
                                         {FEATURE_ORDER.map(feature => {
                                             const currentVal = plansData[currentPlanName]?.features?.[feature];
                                             const newVal = plansData[newPlanName]?.features?.[feature];
-                                            const displayName = FEATURE_DISPLAY_NAMES[feature] || feature;
+                                            let displayName = FEATURE_DISPLAY_NAMES[feature] || feature;
+                                            if (feature === 'Comprobantes año' && (currentPlanName === 'PLAN ESENCIAL' || newPlanName === 'PLAN ESENCIAL')) {
+                                                displayName = 'Comprobantes / Facturas año';
+                                            }
 
                                             // Normalización para comparación
                                             const normCurrent = currentVal === undefined ? false : currentVal;

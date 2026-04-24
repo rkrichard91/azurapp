@@ -104,7 +104,7 @@ BEGIN
     
     -- ESENCIAL (Referencia: Entrada)
     INSERT INTO products (name, description, category_id, features) VALUES 
-    ('PLAN ESENCIAL', 'Plan de entrada anual', cat_plan_id, '{"Comprobantes año": "N/A", "Usuarios": 1, "Puntos de Emisión": 1, "Empresas": 1, "Establecimientos": 1, "Inventario": true, "Proformas": true, "Soporte Técnico": true, "Portal Clientes": true, "SMTP Propio": false, "Compras": false, "Retenciones": false, "Guías de Remisión": false, "Liquidación Compras": false, "Cuentas por Cobrar": false, "Cuentas por Pagar": false, "Notas de Débito": false, "Generación ATS": false}') RETURNING id INTO prod_id;
+    ('PLAN ESENCIAL', 'Plan de entrada anual', cat_plan_id, '{"Comprobantes año": "12", "Usuarios": 1, "Puntos de Emisión": 1, "Empresas": 1, "Establecimientos": 1, "Inventario": false, "Proformas": false, "Soporte Técnico": true, "Portal Clientes": false, "SMTP Propio": false, "Compras": false, "Retenciones": false, "Guías de Remisión": false, "Liquidación Compras": false, "Cuentas por Cobrar": false, "Cuentas por Pagar": false, "Notas de Débito": false, "Generación ATS": false}') RETURNING id INTO prod_id;
     INSERT INTO prices (product_id, channel_id, price, duration_label) VALUES 
     (prod_id, chan_azur_id, 5.00, '1 AÑO'), (prod_id, chan_local_id, 5.00, '1 AÑO');
 
