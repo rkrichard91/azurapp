@@ -126,6 +126,10 @@ BEGIN
     INSERT INTO products (name, description, category_id) VALUES ('Usuario adicional (Anual)', 'Acceso para un usuario extra', cat_mod_id) RETURNING id INTO prod_id;
     INSERT INTO prices (product_id, channel_id, price) VALUES (prod_id, chan_azur_id, 15.00), (prod_id, chan_local_id, 15.00);
 
+    -- Soporte Técnico
+    INSERT INTO products (name, description, category_id) VALUES ('Soporte Técnico', 'Soporte técnico y acompañamiento', cat_mod_id) RETURNING id INTO prod_id;
+    INSERT INTO prices (product_id, channel_id, price) VALUES (prod_id, chan_azur_id, 40.00), (prod_id, chan_local_id, 40.00);
+
     INSERT INTO products (name, description, category_id) VALUES ('Punto de venta', 'Módulo POS Factu', cat_mod_id) RETURNING id INTO prod_id;
     INSERT INTO prices (product_id, channel_id, price) VALUES (prod_id, chan_azur_id, 40.00), (prod_id, chan_local_id, 40.00);
 
