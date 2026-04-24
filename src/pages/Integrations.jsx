@@ -131,26 +131,22 @@ export default function IntegrationsCalculator() {
     const copyToClipboard = () => {
         if (!quote) return;
 
-        // Clean item names (remove 'Reseller')
-        const breakdownText = quote.breakdown.map(b => {
-            const cleanItem = b.item.replace(/reseller/gi, '').trim().replace(/\s{2,}/g, ' ');
-            return `${cleanItem}: $${b.price}`;
-        }).join('\n');
+        let title = '';
+        if (type === 'API') title = 'Plan de Integracion Normal';
+        else if (type === 'WEB') title = 'Plan de Integración + Uso WEB';
+        else if (type === 'ACCOUNTING') title = 'Plan Contable';
+        else if (type === 'UNLIMITED') title = 'Plan Ilimitado';
 
         const text = `
-Cotización ${quote.summary.plan_name}:
------------------------------
-${breakdownText}
+${title}:
 -----------------------------
 Subtotal: $${quote.summary.subtotal}
 IVA (15%): $${quote.summary.iva}
 TOTAL: $${quote.summary.total}
 
-Desglose de Capacidad:
-Base: ${quote.summary.base_docs.toLocaleString()}
-Adicionales: ${quote.summary.additional_docs.toLocaleString()}
-Total: ${quote.summary.total_docs.toLocaleString()} Docs
-    `.trim();
+Total Documentos: ${quote.summary.total_docs.toLocaleString()} Docs
+`.trim();
+
         navigator.clipboard.writeText(text);
         alert("Resumen copiado al portapapeles");
     };
