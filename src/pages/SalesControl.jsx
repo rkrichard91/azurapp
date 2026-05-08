@@ -17,6 +17,7 @@ export default function SalesControl() {
     // Filters state
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('TODOS');
+    const [filterCategory, setFilterCategory] = useState('TODOS');
     const [filterType, setFilterType] = useState('TODOS');
     const [filterOrigin, setFilterOrigin] = useState('');
     const [filterManagement, setFilterManagement] = useState('TODOS');
@@ -67,6 +68,10 @@ export default function SalesControl() {
             result = result.filter(s => s.status === filterStatus);
         }
 
+        if (filterCategory !== 'TODOS') {
+            result = result.filter(s => s.product_details?.category === filterCategory);
+        }
+
         if (filterType !== 'TODOS') {
             result = result.filter(s => s.sale_type === filterType);
         }
@@ -97,7 +102,7 @@ export default function SalesControl() {
 
         setFilteredSales(result);
         calculateStats(result);
-    }, [sales, searchTerm, filterStatus, filterType, filterOrigin, filterManagement, dateFrom, dateTo]);
+    }, [sales, searchTerm, filterStatus, filterCategory, filterType, filterOrigin, filterManagement, dateFrom, dateTo]);
 
     const calculateStats = (data) => {
         const now = new Date();
@@ -170,6 +175,7 @@ export default function SalesControl() {
     const handleClearFilters = () => {
         setSearchTerm('');
         setFilterStatus('TODOS');
+        setFilterCategory('TODOS');
         setFilterType('TODOS');
         setFilterOrigin('');
         setFilterManagement('TODOS');
@@ -371,6 +377,16 @@ export default function SalesControl() {
                             </select>
                         </div>
                         <div>
+                            <label className="block text-xs font-bold text-slate-500 mb-1">Categoría</label>
+                            <select value={filterCategory} onChange={e => setFilterCategory(e.target.value)} className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="TODOS">Todos</option>
+                                <option value="Firma">Firma</option>
+                                <option value="Plan">Plan</option>
+                                <option value="Módulo">Módulo</option>
+                                <option value="Cambio de Plan">Cambio de Plan</option>
+                            </select>
+                        </div>
+                        <div>
                             <label className="block text-xs font-bold text-slate-500 mb-1">Tipo</label>
                             <select value={filterType} onChange={e => setFilterType(e.target.value)} className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <option value="TODOS">Todos</option>
@@ -379,14 +395,18 @@ export default function SalesControl() {
                             </select>
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 mb-1">Origen (ej. Samanes)</label>
-                            <input 
-                                type="text"
+                            <label className="block text-xs font-bold text-slate-500 mb-1">Origen</label>
+                            <select 
                                 value={filterOrigin} 
                                 onChange={e => setFilterOrigin(e.target.value)} 
-                                className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                                placeholder="Locales, web..." 
-                            />
+                                className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                                <option value="">Todos</option>
+                                <option value="World Trade Center">World Trade Center</option>
+                                <option value="Samanes">Samanes</option>
+                                <option value="Albán Borja">Albán Borja</option>
+                                <option value="Páginas Web">Páginas Web</option>
+                            </select>
                         </div>
                         <div>
                             <label className="block text-xs font-bold text-slate-500 mb-1">Gestión</label>
@@ -440,13 +460,14 @@ export default function SalesControl() {
                         </div>
                     </div>
 
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse select-text">
+                    <div className="overflow-x-auto w-full">
+                        <table className="w-full text-left border-collapse select-text min-w-[1200px]">
                             <thead>
                                 <tr className="bg-slate-50 text-slate-500 text-sm border-b border-slate-200">
                                     <th className="p-4 font-semibold">Fecha</th>
                                     <th className="p-4 font-semibold">RUC / Cédula</th>
                                     <th className="p-4 font-semibold">Razón Social</th>
+                                    <th className="p-4 font-semibold">Categoría</th>
                                     <th className="p-4 font-semibold">Tipo</th>
                                     <th className="p-4 font-semibold">Origen</th>
                                     <th className="p-4 font-semibold">Gestión</th>
@@ -459,11 +480,11 @@ export default function SalesControl() {
                             <tbody className="divide-y divide-slate-100">
                                 {loading ? (
                                     <tr>
-                                        <td colSpan="8" className="p-6 text-center text-slate-400">Cargando ventas...</td>
+                                        <td colSpan="11" className="p-6 text-center text-slate-400">Cargando ventas...</td>
                                     </tr>
                                 ) : filteredSales.length === 0 ? (
                                     <tr>
-                                        <td colSpan="8" className="p-6 text-center text-slate-400">No hay resultados para los filtros seleccionados.</td>
+                                        <td colSpan="11" className="p-6 text-center text-slate-400">No hay resultados para los filtros seleccionados.</td>
                                     </tr>
                                 ) : (
                                     filteredSales.map(sale => {
@@ -492,6 +513,13 @@ export default function SalesControl() {
                                                 </td>
                                                 <td className="p-4 text-sm font-medium text-slate-600">{sale.client_ruc}</td>
                                                 <td className="p-4 text-sm font-bold text-slate-800">{sale.client_name}</td>
+                                                <td className="p-4">
+                                                    {sale.product_details?.category && (
+                                                        <span className="text-xs font-bold px-2 py-1 rounded-md bg-blue-100 text-blue-700">
+                                                            {sale.product_details.category}
+                                                        </span>
+                                                    )}
+                                                </td>
                                                 <td className="p-4">
                                                     <span className={`text-xs font-bold px-2 py-1 rounded-md ${sale.sale_type === 'NUEVA' ? 'bg-emerald-100 text-emerald-700' : 'bg-purple-100 text-purple-700'}`}>
                                                         {sale.sale_type}

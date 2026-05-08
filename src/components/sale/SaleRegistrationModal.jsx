@@ -11,6 +11,7 @@ export default function SaleRegistrationModal({ isOpen, onClose, cartItems, tota
         client_name: '',
         client_phone: '',
         client_email: '',
+        product_category: '',
         sale_type: 'NUEVA',
         status: 'EN GESTIÓN',
         description: '',
@@ -30,6 +31,7 @@ export default function SaleRegistrationModal({ isOpen, onClose, cartItems, tota
                 client_name: initialData?.client_name || '',
                 client_phone: initialData?.client_phone || '',
                 client_email: initialData?.client_email || '',
+                product_category: initialData?.product_details?.category || '',
                 sale_type: initialData?.sale_type || 'NUEVA',
                 status: initialData?.status || 'EN GESTIÓN',
                 description: initialData?.description || description || '',
@@ -74,7 +76,7 @@ export default function SaleRegistrationModal({ isOpen, onClose, cartItems, tota
                     plan_amount: initialData.plan_amount ?? 0,
                     signature_amount: initialData.signature_amount ?? 0,
                     module_amount: initialData.module_amount ?? 0,
-                    product_details: initialData.product_details || []
+                    product_details: { ...(initialData.product_details || {}), category: formData.product_category }
                 };
                 await salesService.updateSale(initialData.id, saleData);
                 alert("Venta actualizada exitosamente!");
@@ -88,7 +90,7 @@ export default function SaleRegistrationModal({ isOpen, onClose, cartItems, tota
                     plan_amount: 0,
                     signature_amount: 0,
                     module_amount: 0,
-                    product_details: []
+                    product_details: { category: formData.product_category }
                 };
                 await salesService.createSale(saleData);
                 alert("Venta registrada exitosamente!");
@@ -152,15 +154,15 @@ export default function SaleRegistrationModal({ isOpen, onClose, cartItems, tota
 
     return (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in">
-            <div className="bg-white rounded-2xl w-full max-w-lg shadow-xl overflow-hidden">
-                <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+            <div className="bg-white rounded-2xl w-full max-w-lg shadow-xl overflow-hidden flex flex-col max-h-[95vh]">
+                <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
                     <h3 className="text-lg font-bold text-slate-800">{initialData?.id ? 'Editar Venta' : (isManual ? 'Registrar Venta Manual' : 'Registrar Venta')}</h3>
                     <button onClick={onClose} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
                 
-                <form onSubmit={handleSave} className="p-6 space-y-4">
+                <form onSubmit={handleSave} className="p-6 space-y-4 overflow-y-auto">
                     {error && (
                         <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg font-bold border border-red-200">
                             {error}
@@ -216,7 +218,20 @@ export default function SaleRegistrationModal({ isOpen, onClose, cartItems, tota
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 mb-1">Categoría</label>
+                            <select 
+                                name="product_category" value={formData.product_category} onChange={handleChange}
+                                className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 font-bold"
+                            >
+                                <option value="">Seleccione...</option>
+                                <option value="Firma">Firma</option>
+                                <option value="Plan">Plan</option>
+                                <option value="Módulo">Módulo</option>
+                                <option value="Cambio de Plan">Cambio de Plan</option>
+                            </select>
+                        </div>
                         <div>
                             <label className="block text-xs font-bold text-slate-500 mb-1">Tipo de Venta</label>
                             <select 
@@ -243,19 +258,16 @@ export default function SaleRegistrationModal({ isOpen, onClose, cartItems, tota
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-xs font-bold text-slate-500 mb-1">Origen de la Venta</label>
-                            <input 
-                                list="origin-options"
+                            <select 
                                 name="origin" value={formData.origin} onChange={handleChange}
                                 className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="Ej: Local Samanes, Página Web..."
-                            />
-                            <datalist id="origin-options">
-                                <option value="Local Samanes" />
-                                <option value="Local Garzota" />
-                                <option value="Página Web" />
-                                <option value="Facebook" />
-                                <option value="Instagram" />
-                            </datalist>
+                            >
+                                <option value="">Seleccione un origen...</option>
+                                <option value="World Trade Center">World Trade Center</option>
+                                <option value="Samanes">Samanes</option>
+                                <option value="Albán Borja">Albán Borja</option>
+                                <option value="Páginas Web">Páginas Web</option>
+                            </select>
                         </div>
                         <div>
                             <label className="block text-xs font-bold text-slate-500 mb-1">Descripción de la Venta</label>
