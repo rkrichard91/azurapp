@@ -78,6 +78,7 @@ export default function SaleRegistrationModal({ isOpen, onClose, cartItems, tota
                     module_amount: initialData.module_amount ?? 0,
                     product_details: { ...(initialData.product_details || {}), category: formData.product_category }
                 };
+                delete saleData.product_category;
                 await salesService.updateSale(initialData.id, saleData);
                 alert("Venta actualizada exitosamente!");
             } else if (isManual || !cartItems || cartItems.length === 0) {
@@ -92,6 +93,7 @@ export default function SaleRegistrationModal({ isOpen, onClose, cartItems, tota
                     module_amount: 0,
                     product_details: { category: formData.product_category }
                 };
+                delete saleData.product_category;
                 await salesService.createSale(saleData);
                 alert("Venta registrada exitosamente!");
             } else {
@@ -115,6 +117,7 @@ export default function SaleRegistrationModal({ isOpen, onClose, cartItems, tota
                         product_details: [item],
                         management_type: item.type === 'SIGNATURE' ? (item.gestion || 'Gestión Vendedor') : 'N/A'
                     };
+                    delete itemData.product_category;
                     return salesService.createSale(itemData);
                 });
                 
