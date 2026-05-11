@@ -191,6 +191,7 @@ export default function SignatureSection({
                                     <option value="0">0%</option>
                                     <option value="5">5%</option>
                                     <option value="10">10%</option>
+                                    <option value="16">16%</option>
                                 </select>
                             </div>
 
