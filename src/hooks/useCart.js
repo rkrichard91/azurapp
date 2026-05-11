@@ -65,9 +65,14 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
                 let unitPrice = 0;
 
                 if (priceObj) {
-                    unitPrice = sig.isRenewal
+                    let basePrice = sig.isRenewal
                         ? (parseFloat(priceObj.renewal_price) || parseFloat(priceObj.price))
                         : parseFloat(priceObj.price);
+                    
+                    if (sig.discount > 0) {
+                        basePrice = basePrice * (1 - (sig.discount / 100));
+                    }
+                    unitPrice = basePrice;
                 }
 
                 const shippingMatch = sig.shipping ? sig.shipping.match(/\$([\d\.]+)/) : null;
@@ -151,9 +156,13 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
 
         if (!priceObj) return { base: 0, total: 0 };
 
-        const unit = sigForm.isRenewal
+        let unit = sigForm.isRenewal
             ? (parseFloat(priceObj.renewal_price) || parseFloat(priceObj.price))
             : parseFloat(priceObj.price);
+
+        if (sigForm.discount > 0) {
+            unit = unit * (1 - (sigForm.discount / 100));
+        }
 
         return { base: unit, total: unit * (1 + IVA_RATE) };
     }, [sigForm, signatureProducts]);

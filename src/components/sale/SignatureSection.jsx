@@ -49,7 +49,7 @@ export default function SignatureSection({
                                     <div className="text-right">
                                         <div className="font-bold text-slate-800">
                                             {formatCurrency(
-                                                (sig.isRenewal ? (parseFloat(price?.renewal_price) || parseFloat(price?.price)) : parseFloat(price?.price || 0)) * sig.quantity
+                                                ((sig.isRenewal ? (parseFloat(price?.renewal_price) || parseFloat(price?.price)) : parseFloat(price?.price || 0)) * (1 - (sig.discount || 0) / 100)) * sig.quantity
                                             )}
                                         </div>
                                         <div className="text-xs text-slate-400">Qty: {sig.quantity}</div>
