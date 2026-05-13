@@ -40,6 +40,23 @@ export default function ModuleSection({
                                         <div className="text-xs text-slate-500">{price?.duration_label}</div>
                                     </div>
                                     <div className="flex items-center gap-3">
+                                        <div className="w-20 relative" title="Descuento (Máx 5%)">
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                max="5"
+                                                value={mod.discount || ''}
+                                                onChange={(e) => {
+                                                    let val = parseInt(e.target.value) || 0;
+                                                    if (val > 5) val = 5;
+                                                    if (val < 0) val = 0;
+                                                    setSelectedModules(prev => prev.map((m, i) => i === idx ? { ...m, discount: val } : m));
+                                                }}
+                                                className="w-full p-1 pr-5 bg-white border border-slate-200 rounded text-center text-sm font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none"
+                                                placeholder="0"
+                                            />
+                                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">%</span>
+                                        </div>
                                         <div className="font-bold text-slate-800">{formatCurrency(price?.price || 0)}</div>
                                         <button onClick={() => {
                                             setSelectedModules(prev => prev.filter((_, i) => i !== idx));

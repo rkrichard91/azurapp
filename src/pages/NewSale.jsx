@@ -162,6 +162,26 @@ export default function NewSale() {
                                     />
                                 </div>
                             )}
+
+                            {cart.selectedPlanId && (
+                                <div className="w-28 relative" title="Descuento (Máx 20%)">
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        max="20"
+                                        value={cart.planDiscount || ''}
+                                        onChange={(e) => {
+                                            let val = parseInt(e.target.value) || 0;
+                                            if (val > 20) val = 20;
+                                            if (val < 0) val = 0;
+                                            cart.setPlanDiscount(val);
+                                        }}
+                                        className="w-full p-4 pr-8 bg-slate-50 border border-slate-200 rounded-lg text-center text-slate-700 font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                        placeholder="Desc%"
+                                    />
+                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">%</span>
+                                </div>
+                            )}
                         </div>
                     </div>
 

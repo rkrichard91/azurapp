@@ -9,6 +9,7 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
     const [selectedPlanId, setSelectedPlanId] = useState("");
     const [selectedPlanPriceId, setSelectedPlanPriceId] = useState("");
     const [planMonths, setPlanMonths] = useState(1); // Nuevo estado para meses del plan
+    const [planDiscount, setPlanDiscount] = useState(0);
     const [emissionPoints, setEmissionPoints] = useState(0);
     const [selectedSignatures, setSelectedSignatures] = useState([]);
     const [selectedModules, setSelectedModules] = useState([]);
@@ -46,12 +47,18 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
                 }
                 const quantity = plan.name.toUpperCase().includes("TRANSICI") ? planMonths : 1;
 
+                let unitPrice = priceObj ? parseFloat(priceObj.price) : 0;
+                if (planDiscount > 0) {
+                    unitPrice = unitPrice * (1 - (planDiscount / 100));
+                }
+                const total = unitPrice * quantity;
+
                 items.push({
                     type: 'PLAN',
                     name: plan.name,
                     quantity: quantity,
-                    unitPrice: priceObj ? parseFloat(priceObj.price) : 0,
-                    total: priceObj ? parseFloat(priceObj.price) * quantity : 0,
+                    unitPrice: unitPrice,
+                    total: total,
                     duration: priceObj ? priceObj.duration_label : ''
                 });
             }
@@ -113,7 +120,10 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
             const product = moduleProducts.find(p => p.id === mod.productId);
             if (product) {
                 const priceObj = product.prices.find(pr => pr.id === mod.priceId);
-                const unitPrice = priceObj ? parseFloat(priceObj.price) : 0;
+                let unitPrice = priceObj ? parseFloat(priceObj.price) : 0;
+                if (mod.discount > 0) {
+                    unitPrice = unitPrice * (1 - (mod.discount / 100));
+                }
                 items.push({
                     type: 'MODULE',
                     name: product.name,
@@ -141,7 +151,7 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
         }
 
         return items;
-    }, [selectedPlanId, selectedPlanPriceId, planMonths, selectedSignatures, selectedModules, emissionPoints, planProducts, signatureProducts, moduleProducts, emissionPointProduct]);
+    }, [selectedPlanId, selectedPlanPriceId, planMonths, planDiscount, selectedSignatures, selectedModules, emissionPoints, planProducts, signatureProducts, moduleProducts, emissionPointProduct]);
 
     // Totales
     const subtotal = cartItems.reduce((acc, item) => acc + item.total, 0);
@@ -201,6 +211,7 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
             setSelectedPlanId("");
             setSelectedPlanPriceId("");
             setPlanMonths(1);
+            setPlanDiscount(0);
         }
         if (item.type === 'SIGNATURE') {
             setSelectedSignatures(prev => prev.filter(s => s.id !== item._sigId));
@@ -245,6 +256,7 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
             setSelectedPlanId("");
             setSelectedPlanPriceId("");
             setPlanMonths(1);
+            setPlanDiscount(0);
             setSelectedSignatures([]);
             setSelectedModules([]);
             setEmissionPoints(0);
@@ -256,6 +268,7 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
         selectedPlanId, setSelectedPlanId,
         selectedPlanPriceId, setSelectedPlanPriceId,
         planMonths, setPlanMonths,
+        planDiscount, setPlanDiscount,
         emissionPoints, setEmissionPoints,
         selectedSignatures, setSelectedSignatures,
         selectedModules, setSelectedModules,
