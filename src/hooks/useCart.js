@@ -223,22 +223,19 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
     };
 
     const handleCopy = (type) => {
-        let text = "";
+        let text = `Serían los siguientes servicios:\n`;
+        
+        cartItems.forEach(item => {
+            const cleanName = item.name.replace(/ - (Gestión Vendedor|Autogestión)$/i, '');
+            text += `${cleanName}\n`;
+        });
+        
         if (type === 'RESUMEN') {
-            text = `Serían los siguientes servicios:\n`;
-            cartItems.forEach(item => {
-                text += `* ${item.name} ${item.duration}\n`;
-            });
-            text += `\nTOTAL $${total.toFixed(2)} (IVA INC)`;
+            text += `Valor final $${total.toFixed(2)}`;
         } else {
-            text = `Detalle de Cotización:\n\n`;
-            cartItems.forEach(item => {
-                text += `${item.name} (${item.duration}) x ${item.quantity}: $${item.total.toFixed(2)}(NO INCLUYE IVA)\n`;
-            });
-            text += `\nSubtotal: $${subtotal.toFixed(2)}`;
-            text += `\nIVA (15%): $${iva.toFixed(2)}`;
-            text += `\nTOTAL: $${total.toFixed(2)}`;
+            text += `Valor final $${subtotal.toFixed(2)}+iva`;
         }
+        
         navigator.clipboard.writeText(text);
         alert('Copiado al portapapeles');
     };
