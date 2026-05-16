@@ -89,10 +89,13 @@ export default function SignatureSection({
                                         onChange={(e) => {
                                             const pid = e.target.value;
                                             const prod = signatureProducts.find(p => p.id === pid);
+                                            const firstPrice = prod?.prices?.[0];
                                             setSigForm({
                                                 ...sigForm,
                                                 productId: pid,
-                                                priceId: prod?.prices?.[0]?.id || ""
+                                                product_name: prod?.name || "",
+                                                priceId: firstPrice?.id || "",
+                                                duration_label: firstPrice?.duration_label || ""
                                             });
                                         }}
                                     >
@@ -123,7 +126,16 @@ export default function SignatureSection({
                                 <select
                                     className="w-full p-3 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                                     value={sigForm.priceId}
-                                    onChange={(e) => setSigForm({ ...sigForm, priceId: e.target.value })}
+                                    onChange={(e) => {
+                                    const selectedPriceObj = signatureProducts
+                                        .find(p => p.id === sigForm.productId)
+                                        ?.prices.find(pr => pr.id === e.target.value);
+                                    setSigForm({
+                                        ...sigForm,
+                                        priceId: e.target.value,
+                                        duration_label: selectedPriceObj?.duration_label || sigForm.duration_label
+                                    });
+                                }}
                                 >
                                     {signatureProducts.find(p => p.id === sigForm.productId)?.prices.map(pr => (
                                         <option key={pr.id} value={pr.id}>{pr.duration_label}</option>

@@ -22,6 +22,8 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
     const [sigForm, setSigForm] = useState({
         productId: "",
         priceId: "",
+        product_name: "",   // guardado para fallback entre canales
+        duration_label: "", // guardado para fallback entre canales
         quantity: 1,
         isRenewal: false,
         shipping: "Retiro en Oficina - $0.00 (IVA Incl.)",
@@ -66,9 +68,17 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
 
         // 2. Firmas
         selectedSignatures.forEach(sig => {
-            const product = signatureProducts.find(p => p.id === sig.productId);
+            // Buscar producto por ID; si no coincide (cambio de canal), usar nombre guardado como fallback
+            let product = signatureProducts.find(p => p.id === sig.productId);
+            if (!product && sig.product_name) {
+                product = signatureProducts.find(p => p.name === sig.product_name);
+            }
             if (product) {
-                const priceObj = product.prices.find(pr => pr.id === sig.priceId);
+                // Buscar precio por ID; si no coincide (cambio de canal), usar duration_label guardado como fallback
+                let priceObj = product.prices.find(pr => pr.id === sig.priceId);
+                if (!priceObj && sig.duration_label) {
+                    priceObj = product.prices.find(pr => pr.duration_label === sig.duration_label);
+                }
                 let unitPrice = 0;
 
                 if (priceObj) {
@@ -92,13 +102,10 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
                 let baseName = product.name;
 
                 if (product.name.toLowerCase().includes("natural")) {
-                    // Limpiar "(Cédula)" del nombre base si existe, para no duplicar ni mostrarlo si se elige Cédula
                     baseName = baseName.replace(/\s*\(Cédula\)/i, "");
-
                     if (sig.idType === 'ruc') {
                         nameSuffix = " (RUC)";
                     }
-                    // Si es cédula, no agregamos sufijo (el usuario pidió quitar "Cédula")
                 }
 
                 items.push({
@@ -108,7 +115,7 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
                     quantity: sig.quantity,
                     unitPrice,
                     total,
-                    duration: priceObj ? priceObj.duration_label : '',
+                    duration: priceObj ? priceObj.duration_label : (sig.duration_label || ''),
                     details: sig.shipping ? `Envío: ${sig.shipping}` : '',
                     gestion: sig.gestion
                 });
@@ -182,10 +189,12 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
     const openSignatureModal = () => {
         if (signatureOptions.length > 0) {
             const defaultOpt = signatureOptions[0];
-            const defaultPrice = defaultOpt.product.prices?.[0]?.id || "";
+            const defaultPriceObj = defaultOpt.product.prices?.[0];
             setSigForm({
                 productId: defaultOpt.product.id,
-                priceId: defaultPrice,
+                priceId: defaultPriceObj?.id || "",
+                product_name: defaultOpt.product.name || "",
+                duration_label: defaultPriceObj?.duration_label || "",
                 quantity: 1,
                 isRenewal: false,
                 shipping: "Retiro en Oficina - $0.00 (IVA Incl.)",
