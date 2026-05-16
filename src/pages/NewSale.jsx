@@ -38,31 +38,45 @@ export default function NewSale() {
         if (prevProducts.current.length > 0 && products.length > 0) {
             // Migrar firmas
             cart.setSelectedSignatures(prev => prev.map(sig => {
+                // Find old product by the ID stored in the signature
                 const oldProd = prevProducts.current.find(p => p.id === sig.productId);
+                if (!oldProd) return sig; // If old product not found, don't migrate
+                
                 const oldPrice = oldProd?.prices.find(pr => pr.id === sig.priceId);
                 const duration = oldPrice?.duration_label;
 
-                const newProd = products.find(p => p.id === sig.productId);
+                // Find new product by matching the NAME
+                const newProd = products.find(p => p.name === oldProd.name);
                 const newPrice = newProd?.prices.find(pr => pr.duration_label === duration) || newProd?.prices?.[0];
-                return newPrice ? { ...sig, priceId: newPrice.id } : sig;
+                return newProd && newPrice ? { ...sig, productId: newProd.id, priceId: newPrice.id } : sig;
             }));
 
             // Migrar módulos
             cart.setSelectedModules(prev => prev.map(mod => {
                 const oldProd = prevProducts.current.find(p => p.id === mod.productId);
+                if (!oldProd) return mod;
+
                 const oldPrice = oldProd?.prices.find(pr => pr.id === mod.priceId);
                 const duration = oldPrice?.duration_label;
 
-                const newProd = products.find(p => p.id === mod.productId);
+                const newProd = products.find(p => p.name === oldProd.name);
                 const newPrice = newProd?.prices.find(pr => pr.duration_label === duration) || newProd?.prices?.[0];
-                return newPrice ? { ...mod, priceId: newPrice.id } : mod;
+                return newProd && newPrice ? { ...mod, productId: newProd.id, priceId: newPrice.id } : mod;
             }));
 
             // Verificar plan
             cart.setSelectedPlanId(prev => {
-                if (prev && !products.find(p => p.id === prev)) {
-                    cart.setSelectedPlanPriceId("");
-                    return "";
+                if (prev) {
+                    const oldProd = prevProducts.current.find(p => p.id === prev);
+                    if (!oldProd) return prev;
+
+                    const newProd = products.find(p => p.name === oldProd.name);
+                    if (newProd) {
+                        return newProd.id;
+                    } else {
+                        cart.setSelectedPlanPriceId("");
+                        return "";
+                    }
                 }
                 return prev;
             });
