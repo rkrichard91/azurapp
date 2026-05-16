@@ -36,19 +36,26 @@ export default function NewSale() {
     const prevProducts = useRef([]);
     useEffect(() => {
         if (prevProducts.current.length > 0 && products.length > 0) {
-            // Migrar firmas
+            // Migrar firmas: actualizar priceId al del nuevo canal buscando por duration_label exacto.
+            // Si no hay match exacto, NO hacer fallback — el cartItems usará sig.duration_label como respaldo.
             cart.setSelectedSignatures(prev => prev.map(sig => {
-                // Find old product by the ID stored in the signature
                 const oldProd = prevProducts.current.find(p => p.id === sig.productId);
-                if (!oldProd) return sig; // If old product not found, don't migrate
-                
-                const oldPrice = oldProd?.prices.find(pr => pr.id === sig.priceId);
-                const duration = oldPrice?.duration_label;
+                if (!oldProd) return sig;
 
-                // Find new product by matching the NAME
+                const oldPrice = oldProd?.prices.find(pr => pr.id === sig.priceId);
+                const duration = oldPrice?.duration_label || sig.duration_label;
+
                 const newProd = products.find(p => p.name === oldProd.name);
-                const newPrice = newProd?.prices.find(pr => pr.duration_label === duration) || newProd?.prices?.[0];
-                return newProd && newPrice ? { ...sig, productId: newProd.id, priceId: newPrice.id } : sig;
+                if (!newProd) return sig;
+
+                // Solo actualizar priceId si encontramos la misma duración exacta en el nuevo canal
+                const newPrice = newProd.prices.find(pr => pr.duration_label === duration);
+                if (newPrice) {
+                    return { ...sig, productId: newProd.id, priceId: newPrice.id, duration_label: newPrice.duration_label };
+                }
+                // Si no hay match exacto, actualizar solo el productId y dejar priceId inválido
+                // para que cartItems lo resuelva via duration_label
+                return { ...sig, productId: newProd.id };
             }));
 
             // Migrar módulos
@@ -60,8 +67,13 @@ export default function NewSale() {
                 const duration = oldPrice?.duration_label;
 
                 const newProd = products.find(p => p.name === oldProd.name);
-                const newPrice = newProd?.prices.find(pr => pr.duration_label === duration) || newProd?.prices?.[0];
-                return newProd && newPrice ? { ...mod, productId: newProd.id, priceId: newPrice.id } : mod;
+                if (!newProd) return mod;
+
+                const newPrice = newProd.prices.find(pr => pr.duration_label === duration);
+                if (newPrice) {
+                    return { ...mod, productId: newProd.id, priceId: newPrice.id };
+                }
+                return { ...mod, productId: newProd.id };
             }));
 
             // Verificar plan
