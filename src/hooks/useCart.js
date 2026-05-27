@@ -247,13 +247,23 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
         
         cartItems.forEach(item => {
             const cleanName = item.name.replace(/ - (Gestión Vendedor|Autogestión)$/i, '');
-            text += `${cleanName}\n`;
+            if (type === 'DETALLE') {
+                const displayName = item.type === 'MODULE' ? `Modulo ${cleanName}` : cleanName;
+                const itemPriceStr = Number.isInteger(item.total) ? item.total.toFixed(0) : item.total.toFixed(2);
+                text += `${displayName} - $${itemPriceStr}+iva\n`;
+            } else {
+                text += `${cleanName}\n`;
+            }
         });
         
+        const subtotalStr = Number.isInteger(subtotal) ? subtotal.toFixed(0) : subtotal.toFixed(2);
+        text += `Total $${subtotalStr}+iva\n`;
+
         if (type === 'RESUMEN') {
-            text += `Valor final $${total.toFixed(2)}`;
+            const totalStr = Number.isInteger(total) ? total.toFixed(0) : total.toFixed(2);
+            text += `Valor final $${totalStr}`;
         } else {
-            text += `Valor final $${subtotal.toFixed(2)}+iva`;
+            text += `Valor final $${total.toFixed(2)}`;
         }
         
         navigator.clipboard.writeText(text);

@@ -2,9 +2,14 @@ import { render } from '@testing-library/react';
 import { describe, it, vi } from 'vitest';
 import App from './App';
 
-// Mock supabase client to avoid initialization errors
 vi.mock('./services/supabaseClient', () => ({
     supabase: {
+        auth: {
+            getSession: () => Promise.resolve({ data: { session: null } }),
+            onAuthStateChange: () => ({
+                data: { subscription: { unsubscribe: () => {} } },
+            }),
+        },
         from: () => ({
             select: () => ({
                 data: [],

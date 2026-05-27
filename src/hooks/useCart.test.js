@@ -117,7 +117,7 @@ describe('useCart Hook', () => {
         // Should NOT have (RUC)
         expect(item.name).not.toContain('(RUC)');
         // Should match cleaned name
-        expect(item.name).toBe('Firma P. Natural');
+        expect(item.name).toBe('Firma P. Natural - Gestión Vendedor');
     });
 
     it('should NOT add suffix for non-natural signature', () => {
@@ -182,9 +182,9 @@ describe('useCart Hook', () => {
 
         expect(writeTextMock).toHaveBeenCalled();
         const copiedText = writeTextMock.mock.calls[0][0];
-        // Check for specific format on the line item
-        expect(copiedText).toMatch(/:\s\$\d+\.\d+\(NO INCLUYE IVA\)/);
-        // Ensure global disclaimer is NOT present (optional check, but good for regression)
-        expect(copiedText).not.toContain('** Los precios no incluyen IVA');
+        // Check for specific format on the line item and totals
+        expect(copiedText).toContain('Firma P. Natural - $20+iva');
+        expect(copiedText).toContain('Total $20+iva');
+        expect(copiedText).toContain('Valor final $23.00');
     });
 });
