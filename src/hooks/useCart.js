@@ -259,7 +259,7 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
         cartItems.forEach(item => {
             const cleanName = item.name.replace(/ - (Gestión Vendedor|Autogestión)$/i, '');
             let displayName = cleanName;
-            if (item.type === 'SIGNATURE') {
+            if (item.type === 'SIGNATURE' || item.type === 'PLAN') {
                 displayName = `${cleanName} - ${formatDuration(item.duration)}`;
             } else if (item.type === 'MODULE') {
                 displayName = `Modulo ${cleanName}`;
