@@ -4,7 +4,7 @@ import { IVA_RATE, EMISSION_POINT_TIERS } from '../constants';
 /**
  * Hook para manejar el carrito de cotización (selecciones, totales, handlers).
  */
-export function useCart({ planProducts, signatureProducts, moduleProducts, emissionPointProduct, signatureOptions }) {
+export function useCart({ planProducts, signatureProducts, moduleProducts, emissionPointProduct, signatureOptions, canalSeleccionado }) {
     // Selecciones
     const [selectedPlanId, setSelectedPlanId] = useState("");
     const [selectedPlanPriceId, setSelectedPlanPriceId] = useState("");
@@ -243,16 +243,33 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
     };
 
     const handleCopy = (type) => {
-        let text = `Serían los siguientes servicios:\n`;
+        const origen = canalSeleccionado === 'LOCAL' ? 'Local' : 'Azur';
+        let text = `${origen}\nSerían los siguientes servicios:\n`;
+        
+        const formatDuration = (str) => {
+            if (!str) return '';
+            let s = str.toLowerCase();
+            s = s.replace(/días|dias/g, 'Días');
+            s = s.replace(/día|dia/g, 'Día');
+            s = s.replace(/años/g, 'Años');
+            s = s.replace(/año/g, 'Año');
+            return s.replace(/\b\w/g, c => c.toUpperCase());
+        };
         
         cartItems.forEach(item => {
             const cleanName = item.name.replace(/ - (Gestión Vendedor|Autogestión)$/i, '');
+            let displayName = cleanName;
+            if (item.type === 'SIGNATURE') {
+                displayName = `${cleanName} - ${formatDuration(item.duration)}`;
+            } else if (item.type === 'MODULE') {
+                displayName = `Modulo ${cleanName}`;
+            }
+            
             if (type === 'DETALLE') {
-                const displayName = item.type === 'MODULE' ? `Modulo ${cleanName}` : cleanName;
                 const itemPriceStr = Number.isInteger(item.total) ? item.total.toFixed(0) : item.total.toFixed(2);
                 text += `${displayName} - $${itemPriceStr}+iva\n`;
             } else {
-                text += `${cleanName}\n`;
+                text += `${displayName}\n`;
             }
         });
         

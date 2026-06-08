@@ -183,7 +183,8 @@ describe('useCart Hook', () => {
         expect(writeTextMock).toHaveBeenCalled();
         const copiedText = writeTextMock.mock.calls[0][0];
         // Check for specific format on the line item and totals
-        expect(copiedText).toContain('Firma P. Natural - $20+iva');
+        expect(copiedText).toContain('Azur\nSerían los siguientes servicios:\n');
+        expect(copiedText).toContain('Firma P. Natural - 1 Año - $20+iva');
         expect(copiedText).toContain('Total $20+iva');
         expect(copiedText).toContain('Valor final $23.00');
     });

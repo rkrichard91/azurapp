@@ -30,6 +30,7 @@ export default function NewSale() {
         moduleProducts,
         emissionPointProduct,
         signatureOptions,
+        canalSeleccionado,
     });
 
     // Migración de canal: cuando cambian los productos, migrar selecciones
