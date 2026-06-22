@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { X, Save, Search, Loader2 } from 'lucide-react';
 import { salesService } from '../../services/salesService';
 import { useApp } from '../../context/AppContext';
+import { useAuth } from '../../context/AuthContext';
 
 export default function SaleRegistrationModal({ isOpen, onClose, cartItems, total, planAmount, signatureAmount, moduleAmount, initialData, isManual, description }) {
     const { canalSeleccionado } = useApp();
+    const { user } = useAuth();
 
     const [formData, setFormData] = useState({
         client_ruc: '',
@@ -85,6 +87,7 @@ export default function SaleRegistrationModal({ isOpen, onClose, cartItems, tota
                 // MANUAL / EMPTY CART MODE
                 const saleData = {
                     ...formData,
+                    user_id: user?.id,
                     next_contact_date: finalContactDate,
                     channel: canalSeleccionado,
                     total_amount: parseFloat(formData.total_amount) || 0,
@@ -107,6 +110,7 @@ export default function SaleRegistrationModal({ isOpen, onClose, cartItems, tota
 
                     const itemData = {
                         ...formData,
+                        user_id: user?.id,
                         description: desc,
                         next_contact_date: finalContactDate,
                         channel: canalSeleccionado,

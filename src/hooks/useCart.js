@@ -253,7 +253,7 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
             s = s.replace(/día|dia/g, 'Día');
             s = s.replace(/años/g, 'Años');
             s = s.replace(/año/g, 'Año');
-            return s.replace(/\b\w/g, c => c.toUpperCase());
+            return s.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
         };
         
         cartItems.forEach(item => {

@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Temporary Git Portable files
+/mingit/
+/mingit.zip

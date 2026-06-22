@@ -6,9 +6,17 @@ export const salesService = {
      * @param {Object} saleData - object containing client data, sale_type, channel, status, and amounts
      */
     async createSale(saleData) {
+        let finalSaleData = { ...saleData };
+        if (!finalSaleData.user_id) {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.user) {
+                finalSaleData.user_id = session.user.id;
+            }
+        }
+
         const { data, error } = await supabase
             .from('sales')
-            .insert([saleData])
+            .insert([finalSaleData])
             .select()
             .single();
 
