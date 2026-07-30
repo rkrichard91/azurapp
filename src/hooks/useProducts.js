@@ -24,9 +24,22 @@ export function useProducts(canalSeleccionado) {
         return products
             .filter(p => p.category?.code === 'PLAN')
             .sort((a, b) => {
-                const priceA = a.prices && a.prices.length > 0 ? a.prices[0].price : 0;
-                const priceB = b.prices && b.prices.length > 0 ? b.prices[0].price : 0;
-                return priceA - priceB;
+                const isContableA = a.name.toUpperCase().includes('CONTABLE');
+                const isContableB = b.name.toUpperCase().includes('CONTABLE');
+
+                // Los planes contables van al final, después de los planes ilimitados
+                if (isContableA !== isContableB) {
+                    return isContableA ? 1 : -1;
+                }
+
+                // Obtener precio base para ordenamiento (preferir precio a 1 AÑO o el primer precio disponible)
+                const getBasePrice = (p) => {
+                    const price1Yr = p.prices?.find(pr => pr.duration_label === '1 AÑO')?.price;
+                    if (price1Yr !== undefined) return price1Yr;
+                    return p.prices && p.prices.length > 0 ? p.prices[0].price : 0;
+                };
+
+                return getBasePrice(a) - getBasePrice(b);
             });
     }, [products]);
     const signatureProducts = useMemo(() => products.filter(p => p.category?.code === 'SIGNATURE'), [products]);
