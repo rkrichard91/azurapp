@@ -22,15 +22,44 @@ export const EMISSION_POINT_TIERS = [
     { minQty: 1, price: 2.25 },
 ];
 
-// Orden de features para comparativa de planes
+// Orden de features para comparativa de planes (basado en la matriz oficial de características)
 export const FEATURE_ORDER = [
-    "Comprobantes año", "Usuarios", "Puntos de Emisión", "Empresas", "Establecimientos",
-    "Inventario", "Proformas", "Soporte Técnico", "Portal Clientes", "SMTP Propio",
-    "Compras", "Retenciones", "Guías de Remisión", "Liquidación Compras", "Cuentas por Cobrar",
-    "Cuentas por Pagar", "Notas de Débito", "Generación ATS"
+    "Comprobantes año",
+    "Usuarios",
+    "Empresas",
+    "Establecimientos",
+    "Puntos de Emisión",
+    "Facturas",
+    "Retenciones",
+    "Notas de crédito",
+    "Notas de débito",
+    "Guías de remisión",
+    "Liquidación compras",
+    "Proformas",
+    "Inventario",
+    "Compras",
+    "Reportes",
+    "Cuentas por cobrar",
+    "Cuentas por pagar",
+    "ATS",
+    "SMTP propio",
+    "API REST",
+    "Portal documentación",
+    "Soporte"
 ];
 
 // Nombres de display para features
 export const FEATURE_DISPLAY_NAMES = {
     "Comprobantes año": "Comprobantes al año",
+    "Puntos de Emisión": "Puntos de emisión",
+    "Guías de remisión": "Guías de remisión",
+    "Liquidación compras": "Liquidaciones de compra",
+    "Cuentas por cobrar": "Cuentas por cobrar",
+    "Cuentas por pagar": "Cuentas por pagar",
+    "ATS": "Generación de ATS",
+    "SMTP propio": "Correo SMTP propio",
+    "API REST": "API REST",
+    "Portal documentación": "Portal de comprobantes (clientes)",
+    "Soporte": "Soporte técnico"
 };
+

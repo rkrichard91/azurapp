@@ -213,9 +213,44 @@ export default function PlanChange() {
         const currentFeatures = currentPlan.features;
         const newFeatures = newPlan.features;
 
+        const FEATURE_ALIASES = {
+            "Comprobantes año": ["Comprobantes año", "Comprobantes al año", "Comprobantes / año"],
+            "Usuarios": ["Usuarios"],
+            "Empresas": ["Empresas"],
+            "Establecimientos": ["Establecimientos"],
+            "Puntos de Emisión": ["Puntos de Emisión", "Puntos de emisión", "Puntos de Emision"],
+            "Facturas": ["Facturas"],
+            "Retenciones": ["Retenciones"],
+            "Notas de crédito": ["Notas de crédito", "Notas de credito"],
+            "Notas de débito": ["Notas de débito", "Notas de debito"],
+            "Guías de remisión": ["Guías de remisión", "Guías de Remisión", "Guias de remision"],
+            "Liquidación compras": ["Liquidación compras", "Liquidación Compras", "Liquidación de compra", "Liquidacion compras"],
+            "Proformas": ["Proformas", "Proforma"],
+            "Inventario": ["Inventario"],
+            "Compras": ["Compras"],
+            "Reportes": ["Reportes"],
+            "Cuentas por cobrar": ["Cuentas por cobrar", "Cuentas por Cobrar"],
+            "Cuentas por pagar": ["Cuentas por pagar", "Cuentas por Pagar"],
+            "ATS": ["ATS", "Generación ATS", "Generacion ATS"],
+            "SMTP propio": ["SMTP propio", "SMTP Propio", "Correo SMTP propio"],
+            "API REST": ["API REST"],
+            "Portal documentación": ["Portal documentación", "Portal Clientes", "Portal de comprobantes"],
+            "Soporte": ["Soporte", "Soporte Técnico", "Soporte técnico"]
+        };
+
+        const getFeatureVal = (featObj, featKey) => {
+            if (!featObj) return undefined;
+            if (featObj[featKey] !== undefined) return featObj[featKey];
+            const aliases = FEATURE_ALIASES[featKey] || [featKey];
+            for (const alias of aliases) {
+                if (featObj[alias] !== undefined) return featObj[alias];
+            }
+            return undefined;
+        };
+
         FEATURE_ORDER.forEach(feature => {
-            const oldValue = currentFeatures[feature];
-            const newValue = newFeatures[feature];
+            const oldValue = getFeatureVal(currentFeatures, feature);
+            const newValue = getFeatureVal(newFeatures, feature);
 
             let displayName = FEATURE_DISPLAY_NAMES[feature] || feature;
             if (feature === 'Comprobantes año' && newPlanName === 'PLAN ESENCIAL') {
@@ -462,8 +497,8 @@ export default function PlanChange() {
                                     </thead>
                                     <tbody className="divide-y divide-slate-100">
                                         {FEATURE_ORDER.map(feature => {
-                                            const currentVal = plansData[currentPlanName]?.features?.[feature];
-                                            const newVal = plansData[newPlanName]?.features?.[feature];
+                                            const currentVal = getFeatureVal(plansData[currentPlanName]?.features, feature);
+                                            const newVal = getFeatureVal(plansData[newPlanName]?.features, feature);
                                             let displayName = FEATURE_DISPLAY_NAMES[feature] || feature;
                                             if (feature === 'Comprobantes año' && (currentPlanName === 'PLAN ESENCIAL' || newPlanName === 'PLAN ESENCIAL')) {
                                                 displayName = 'Comprobantes / Facturas año';
