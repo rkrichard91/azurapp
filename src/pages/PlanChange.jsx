@@ -34,7 +34,8 @@ export default function PlanChange() {
                 const products = await fetchProductsByChannel(canalSeleccionado);
                 const plans = products.filter(p =>
                     p.category?.code === 'PLAN' &&
-                    !['PLAN TRANSICIÓN', 'PLAN CONTABLE', 'PLAN CONTABLE PRO'].includes(p.name)
+                    !p.name.toUpperCase().includes('CONTABLE') &&
+                    !['PLAN TRANSICIÓN'].includes(p.name)
                 );
 
                 // Transform to map structure needed by component: { "PLAN NAME": { price: X, features: {} } }
