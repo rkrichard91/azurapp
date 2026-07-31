@@ -1,5 +1,5 @@
 -- ==============================================================================
--- MIGRACIÓN 05: Limpieza de Productos Duplicados e Incorporación de Empleado y Establecimiento Contable
+-- MIGRACIÓN 05: Limpieza de Productos Duplicados y Actualización de Nombres a (Micro a Especial II)
 -- ==============================================================================
 
 DO $$
@@ -21,11 +21,16 @@ BEGIN
         'Usuario Adic. (Contable - Anual)'
     );
 
-    -- 2. Renombrar usuario adicional estándar a 'Usuario Adicional (Planes Estándar)'
+    -- 2. Renombrar add-ons no contables a '(Micro a Especial II)'
     UPDATE public.products 
-    SET name = 'Usuario Adicional (Planes Estándar)', 
-        description = 'Acceso para un usuario extra en planes estándar'
-    WHERE name IN ('Usuario adicional (Anual)', 'Usuario Adicional (Anual)');
+    SET name = 'Usuario Adicional (Micro a Especial II)', 
+        description = 'Acceso para un usuario extra (Planes Micro a Especial II)'
+    WHERE name IN ('Usuario adicional (Anual)', 'Usuario Adicional (Anual)', 'Usuario Adicional (Planes Estándar)');
+
+    UPDATE public.products 
+    SET name = 'Establecimiento Adicional (Micro a Especial II)', 
+        description = 'Sucursal extra (Planes Micro a Especial II)'
+    WHERE name IN ('Establecimiento Adicional', 'Establecimiento Adicional (Anual)');
 
     -- 3. Asegurar que 'Usuario Adicional (Plan Contable)' esté activo y con precio anual completo sin descuento ($30.00)
     UPDATE public.products 

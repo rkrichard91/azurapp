@@ -127,10 +127,14 @@ BEGIN
         END IF;
     END IF;
 
-    -- Renombrar 'Usuario adicional (Anual)' a 'Usuario Adicional (Planes Estándar)' para mayor claridad
+    -- Renombrar add-ons no contables a '(Micro a Especial II)' para mayor claridad
     UPDATE public.products 
-    SET name = 'Usuario Adicional (Planes Estándar)', description = 'Acceso para un usuario extra en planes estándar'
-    WHERE name IN ('Usuario adicional (Anual)', 'Usuario Adicional (Anual)');
+    SET name = 'Usuario Adicional (Micro a Especial II)', description = 'Acceso para un usuario extra (Planes Micro a Especial II)'
+    WHERE name IN ('Usuario adicional (Anual)', 'Usuario Adicional (Anual)', 'Usuario Adicional (Planes Estándar)');
+
+    UPDATE public.products 
+    SET name = 'Establecimiento Adicional (Micro a Especial II)', description = 'Sucursal extra (Planes Micro a Especial II)'
+    WHERE name IN ('Establecimiento Adicional', 'Establecimiento Adicional (Anual)');
 
     --------------------------------------------------------------------------------
     -- ADD-ONS CONTABLES (MÓDULOS)
