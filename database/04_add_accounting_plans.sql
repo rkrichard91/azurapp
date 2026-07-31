@@ -17,10 +17,15 @@ BEGIN
     SELECT id INTO chan_azur_id FROM public.channels WHERE code = 'AZUR';
     SELECT id INTO chan_local_id FROM public.channels WHERE code = 'LOCAL';
 
-    -- Inactivar o remover planes contables antiguos si existen
+    -- Inactivar o remover planes y módulos contables antiguos si existen
     UPDATE public.products 
     SET is_active = false 
-    WHERE name IN ('PLAN CONTABLE', 'PLAN CONTABLE PRO');
+    WHERE name IN (
+        'PLAN CONTABLE', 
+        'PLAN CONTABLE PRO',
+        'Usuario Adic. (Contable - Mensual)',
+        'Usuario Adic. (Contable - Anual)'
+    );
 
     --------------------------------------------------------------------------------
     -- PLAN CONTABLE ESENCIAL ($25/mes o $270/año)
