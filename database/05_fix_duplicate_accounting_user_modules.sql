@@ -1,5 +1,5 @@
 -- ==============================================================================
--- MIGRACIÓN 05: Limpieza de Productos Duplicados e Incorporación de Empleado Adicional
+-- MIGRACIÓN 05: Limpieza de Productos Duplicados e Incorporación de Empleado y Establecimiento Contable
 -- ==============================================================================
 
 DO $$
@@ -27,7 +27,7 @@ BEGIN
         description = 'Acceso para un usuario extra en planes estándar'
     WHERE name IN ('Usuario adicional (Anual)', 'Usuario Adicional (Anual)');
 
-    -- 3. Asegurar que 'Usuario Adicional (Plan Contable)' esté activo y actualizar precio anual completo sin descuento ($30.00)
+    -- 3. Asegurar que 'Usuario Adicional (Plan Contable)' esté activo y con precio anual completo sin descuento ($30.00)
     UPDATE public.products 
     SET is_active = true 
     WHERE name = 'Usuario Adicional (Plan Contable)';
@@ -39,7 +39,7 @@ BEGIN
         WHERE product_id = prod_id AND duration_label = '1 AÑO';
     END IF;
 
-    -- 4. Insertar u ordenar 'Empleado Adicional (Plan Contable)' ($0.50/mes o $6.00/año)
+    -- 4. Insertar u ordenar 'Empleado Adicional (Plan Contable)' ($0.50/mes o $6.00/año completo sin descuento)
     IF NOT EXISTS (SELECT 1 FROM public.products WHERE name = 'Empleado Adicional (Plan Contable)') THEN
         INSERT INTO public.products (name, description, category_id)
         VALUES ('Empleado Adicional (Plan Contable)', 'Empleado extra en Nómina para Planes Contables', cat_mod_id)
@@ -61,6 +61,32 @@ BEGIN
         IF prod_id IS NOT NULL THEN
             UPDATE public.prices 
             SET price = 6.00 
+            WHERE product_id = prod_id AND duration_label = '1 AÑO';
+        END IF;
+    END IF;
+
+    -- 5. Insertar u ordenar 'Establecimiento Adicional (Plan Contable)' ($20.00/mes o $216.00/año con 10% descuento)
+    IF NOT EXISTS (SELECT 1 FROM public.products WHERE name = 'Establecimiento Adicional (Plan Contable)') THEN
+        INSERT INTO public.products (name, description, category_id)
+        VALUES ('Establecimiento Adicional (Plan Contable)', 'Sucursal extra para Planes Contables', cat_mod_id)
+        RETURNING id INTO prod_id;
+
+        IF chan_azur_id IS NOT NULL THEN
+            INSERT INTO public.prices (product_id, channel_id, price, duration_label) VALUES
+            (prod_id, chan_azur_id, 20.00, '1 MES'),
+            (prod_id, chan_azur_id, 216.00, '1 AÑO');
+        END IF;
+
+        IF chan_local_id IS NOT NULL THEN
+            INSERT INTO public.prices (product_id, channel_id, price, duration_label) VALUES
+            (prod_id, chan_local_id, 20.00, '1 MES'),
+            (prod_id, chan_local_id, 216.00, '1 AÑO');
+        END IF;
+    ELSE
+        SELECT id INTO prod_id FROM public.products WHERE name = 'Establecimiento Adicional (Plan Contable)';
+        IF prod_id IS NOT NULL THEN
+            UPDATE public.prices 
+            SET price = 216.00 
             WHERE product_id = prod_id AND duration_label = '1 AÑO';
         END IF;
     END IF;
