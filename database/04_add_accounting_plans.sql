@@ -145,17 +145,17 @@ BEGIN
         IF chan_azur_id IS NOT NULL THEN
             INSERT INTO public.prices (product_id, channel_id, price, duration_label) VALUES
             (prod_id, chan_azur_id, 2.50, '1 MES'),
-            (prod_id, chan_azur_id, 27.00, '1 AÑO');
+            (prod_id, chan_azur_id, 30.00, '1 AÑO');
         END IF;
 
         IF chan_local_id IS NOT NULL THEN
             INSERT INTO public.prices (product_id, channel_id, price, duration_label) VALUES
             (prod_id, chan_local_id, 2.50, '1 MES'),
-            (prod_id, chan_local_id, 27.00, '1 AÑO');
+            (prod_id, chan_local_id, 30.00, '1 AÑO');
         END IF;
     END IF;
 
-    -- 2. Empleado Adicional (Plan Contable) - $0.50/mes o $5.40/año
+    -- 2. Empleado Adicional (Plan Contable) - $0.50/mes o $6.00/año
     IF NOT EXISTS (SELECT 1 FROM public.products WHERE name = 'Empleado Adicional (Plan Contable)') THEN
         INSERT INTO public.products (name, description, category_id)
         VALUES ('Empleado Adicional (Plan Contable)', 'Empleado extra en Nómina para Planes Contables', cat_mod_id)
@@ -164,13 +164,13 @@ BEGIN
         IF chan_azur_id IS NOT NULL THEN
             INSERT INTO public.prices (product_id, channel_id, price, duration_label) VALUES
             (prod_id, chan_azur_id, 0.50, '1 MES'),
-            (prod_id, chan_azur_id, 5.40, '1 AÑO');
+            (prod_id, chan_azur_id, 6.00, '1 AÑO');
         END IF;
 
         IF chan_local_id IS NOT NULL THEN
             INSERT INTO public.prices (product_id, channel_id, price, duration_label) VALUES
             (prod_id, chan_local_id, 0.50, '1 MES'),
-            (prod_id, chan_local_id, 5.40, '1 AÑO');
+            (prod_id, chan_local_id, 6.00, '1 AÑO');
         END IF;
     END IF;
 
