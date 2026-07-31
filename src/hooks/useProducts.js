@@ -43,7 +43,33 @@ export function useProducts(canalSeleccionado) {
             });
     }, [products]);
     const signatureProducts = useMemo(() => products.filter(p => p.category?.code === 'SIGNATURE'), [products]);
-    const moduleProducts = useMemo(() => products.filter(p => p.category?.code === 'MODULE'), [products]);
+    const moduleProducts = useMemo(() => {
+        const raw = products.filter(p => p.category?.code === 'MODULE');
+        const orderMap = {
+            'Usuario Adicional (Planes Estándar)': 1,
+            'Usuario adicional (Anual)': 1,
+            'Usuario Adicional (Planes Ilimitados)': 2,
+            'Usuario Adicional (Plan Contable)': 3,
+            'Empleado Adicional (Plan Contable)': 4,
+            'Establecimiento Adicional (Plan Contable)': 5,
+            'Establecimiento Adicional': 6,
+            'Empresa adicional': 7,
+            'Punto de venta': 8,
+            'Soporte Técnico': 9,
+            'Generación de ATS': 10,
+            'Compras con ATS': 11,
+            'Compras sin ATS': 12,
+            'Módulo Documentos Recibidos': 13,
+            'Factura Recurrente': 14,
+        };
+
+        return raw.sort((a, b) => {
+            const orderA = orderMap[a.name] ?? 99;
+            const orderB = orderMap[b.name] ?? 99;
+            if (orderA !== orderB) return orderA - orderB;
+            return a.name.localeCompare(b.name);
+        });
+    }, [products]);
     const emissionPointProduct = useMemo(() => products.find(p => p.name === 'Establecimiento Adicional' || p.name === 'Punto de venta'), [products]);
 
     // Opciones de firma mapeadas

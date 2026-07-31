@@ -330,18 +330,17 @@ BEGIN
     -- MÓDULOS
     --------------------------------------------------------------------------------
     
-    INSERT INTO products (name, description, category_id) VALUES ('Usuario adicional (Anual)', 'Acceso para un usuario extra', cat_mod_id) RETURNING id INTO prod_id;
+    INSERT INTO products (name, description, category_id) VALUES ('Usuario Adicional (Planes Estándar)', 'Acceso para un usuario extra en planes estándar', cat_mod_id) RETURNING id INTO prod_id;
     INSERT INTO prices (product_id, channel_id, price, duration_label) VALUES (prod_id, chan_azur_id, 15.00, '1 AÑO'), (prod_id, chan_local_id, 15.00, '1 AÑO');
 
     INSERT INTO products (name, description, category_id) VALUES ('Usuario Adicional (Planes Ilimitados)', 'Acceso para un usuario extra en planes Ilimitados', cat_mod_id) RETURNING id INTO prod_id;
     INSERT INTO prices (product_id, channel_id, price, duration_label) VALUES (prod_id, chan_azur_id, 30.00, '1 AÑO'), (prod_id, chan_local_id, 30.00, '1 AÑO');
 
-    -- Soporte Técnico
-    INSERT INTO products (name, description, category_id) VALUES ('Soporte Técnico', 'Soporte técnico y acompañamiento', cat_mod_id) RETURNING id INTO prod_id;
-    INSERT INTO prices (product_id, channel_id, price, duration_label) VALUES (prod_id, chan_azur_id, 40.00, 'PAGO ÚNICO'), (prod_id, chan_local_id, 40.00, 'PAGO ÚNICO');
-
     INSERT INTO products (name, description, category_id) VALUES ('Usuario Adicional (Plan Contable)', 'Acceso para un usuario extra en Planes Contables', cat_mod_id) RETURNING id INTO prod_id;
     INSERT INTO prices (product_id, channel_id, price, duration_label) VALUES (prod_id, chan_azur_id, 2.50, '1 MES'), (prod_id, chan_azur_id, 27.00, '1 AÑO'), (prod_id, chan_local_id, 2.50, '1 MES'), (prod_id, chan_local_id, 27.00, '1 AÑO');
+
+    INSERT INTO products (name, description, category_id) VALUES ('Empleado Adicional (Plan Contable)', 'Empleado extra en Nómina para Planes Contables', cat_mod_id) RETURNING id INTO prod_id;
+    INSERT INTO prices (product_id, channel_id, price, duration_label) VALUES (prod_id, chan_azur_id, 0.50, '1 MES'), (prod_id, chan_azur_id, 5.40, '1 AÑO'), (prod_id, chan_local_id, 0.50, '1 MES'), (prod_id, chan_local_id, 5.40, '1 AÑO');
 
     INSERT INTO products (name, description, category_id) VALUES ('Establecimiento Adicional (Plan Contable)', 'Sucursal extra para Planes Contables', cat_mod_id) RETURNING id INTO prod_id;
     INSERT INTO prices (product_id, channel_id, price, duration_label) VALUES (prod_id, chan_azur_id, 20.00, '1 MES'), (prod_id, chan_azur_id, 216.00, '1 AÑO'), (prod_id, chan_local_id, 20.00, '1 MES'), (prod_id, chan_local_id, 216.00, '1 AÑO');

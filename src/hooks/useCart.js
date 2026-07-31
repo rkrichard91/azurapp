@@ -126,18 +126,39 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
         selectedModules.forEach(mod => {
             const product = moduleProducts.find(p => p.id === mod.productId);
             if (product) {
-                const priceObj = product.prices.find(pr => pr.id === mod.priceId);
+                const priceObj = product.prices.find(pr => pr.id === mod.priceId) || product.prices?.[0];
                 let unitPrice = priceObj ? parseFloat(priceObj.price) : 0;
                 if (mod.discount > 0) {
                     unitPrice = unitPrice * (1 - (mod.discount / 100));
                 }
+                const isMonthly = priceObj?.duration_label?.toUpperCase().includes('MES');
+                const quantity = Math.max(1, parseInt(mod.quantity) || 1);
+                const months = isMonthly ? Math.max(1, parseInt(mod.months) || 1) : 1;
+                const total = unitPrice * quantity * months;
+
+                let durationText = priceObj ? priceObj.duration_label : '';
+                if (isMonthly) {
+                    durationText = `${months} ${months === 1 ? 'MES' : 'MESES'}`;
+                }
+
+                let detailsText = '';
+                if (quantity > 1 && months > 1) {
+                    detailsText = `${quantity} unidades x ${months} meses`;
+                } else if (quantity > 1) {
+                    detailsText = `${quantity} unidades`;
+                } else if (months > 1) {
+                    detailsText = `${months} meses`;
+                }
+
                 items.push({
                     type: 'MODULE',
                     name: product.name,
-                    quantity: mod.quantity,
+                    quantity,
+                    months,
                     unitPrice,
-                    total: unitPrice * mod.quantity,
-                    duration: priceObj ? priceObj.duration_label : ''
+                    total,
+                    duration: durationText,
+                    details: detailsText
                 });
             }
         });
