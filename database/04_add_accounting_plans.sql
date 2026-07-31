@@ -183,13 +183,13 @@ BEGIN
         IF chan_azur_id IS NOT NULL THEN
             INSERT INTO public.prices (product_id, channel_id, price, duration_label) VALUES
             (prod_id, chan_azur_id, 20.00, '1 MES'),
-            (prod_id, chan_azur_id, 216.00, '1 AÑO');
+            (prod_id, chan_azur_id, 240.00, '1 AÑO');
         END IF;
 
         IF chan_local_id IS NOT NULL THEN
             INSERT INTO public.prices (product_id, channel_id, price, duration_label) VALUES
             (prod_id, chan_local_id, 20.00, '1 MES'),
-            (prod_id, chan_local_id, 216.00, '1 AÑO');
+            (prod_id, chan_local_id, 240.00, '1 AÑO');
         END IF;
     END IF;
 
