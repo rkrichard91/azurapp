@@ -14,7 +14,7 @@ BEGIN
 
     -- PLAN MICRO
     UPDATE public.products 
-    SET features = jsonb_set(jsonb_set(features, '{Inventario}', 'false'::jsonb), '{Proformas}', 'false'::jsonb)
+    SET features = jsonb_set(jsonb_set(features, '{Inventario}', 'false'::jsonb), '{Proformas}', 'true'::jsonb)
     WHERE name = 'PLAN MICRO';
 
     -- PLAN MINI (Proformas es TRUE según la matriz)
