@@ -133,7 +133,7 @@ BEGIN
     WHERE name IN ('Usuario adicional (Anual)', 'Usuario Adicional (Anual)', 'Usuario Adicional (Planes Estándar)');
 
     UPDATE public.products 
-    SET name = 'Establecimiento Adicional', description = 'Sucursal extra (Planes Micro a Especial II)'
+    SET name = 'Establecimiento Adicional', description = 'Sucursal extra (Planes Estándar)'
     WHERE name IN ('Establecimiento Adicional (Micro a Especial II)', 'Establecimiento Adicional (Anual)');
 
     --------------------------------------------------------------------------------

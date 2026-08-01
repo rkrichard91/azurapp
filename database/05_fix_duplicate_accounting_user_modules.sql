@@ -29,7 +29,7 @@ BEGIN
 
     UPDATE public.products 
     SET name = 'Establecimiento Adicional', 
-        description = 'Sucursal extra (Planes Micro a Especial II)'
+        description = 'Sucursal extra (Planes Estándar)'
     WHERE name IN ('Establecimiento Adicional (Micro a Especial II)', 'Establecimiento Adicional (Anual)');
 
     -- 3. Asegurar que 'Usuario Adicional (Plan Contable)' esté activo y con precio anual completo sin descuento ($30.00)
