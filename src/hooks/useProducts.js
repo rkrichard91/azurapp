@@ -52,7 +52,6 @@ export function useProducts(canalSeleccionado) {
             'Usuario Adicional (Planes Ilimitados)': 2,
             'Usuario Adicional (Plan Contable)': 3,
             'Empleado Adicional (Plan Contable)': 4,
-            'Establecimiento Adicional (Micro a Especial II)': 5,
             'Establecimiento Adicional': 5,
             'Establecimiento Adicional (Plan Contable)': 6,
             'Empresa adicional': 7,

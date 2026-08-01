@@ -133,8 +133,8 @@ BEGIN
     WHERE name IN ('Usuario adicional (Anual)', 'Usuario Adicional (Anual)', 'Usuario Adicional (Planes Estándar)');
 
     UPDATE public.products 
-    SET name = 'Establecimiento Adicional (Micro a Especial II)', description = 'Sucursal extra (Planes Micro a Especial II)'
-    WHERE name IN ('Establecimiento Adicional', 'Establecimiento Adicional (Anual)');
+    SET name = 'Establecimiento Adicional', description = 'Sucursal extra (Planes Micro a Especial II)'
+    WHERE name IN ('Establecimiento Adicional (Micro a Especial II)', 'Establecimiento Adicional (Anual)');
 
     --------------------------------------------------------------------------------
     -- ADD-ONS CONTABLES (MÓDULOS)

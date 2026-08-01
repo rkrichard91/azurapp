@@ -351,7 +351,7 @@ BEGIN
     INSERT INTO products (name, description, category_id) VALUES ('Empresa adicional', 'Manejo de otro RUC', cat_mod_id) RETURNING id INTO prod_id;
     INSERT INTO prices (product_id, channel_id, price, duration_label) VALUES (prod_id, chan_azur_id, 60.00, '1 AÑO'), (prod_id, chan_local_id, 60.00, '1 AÑO');
 
-    INSERT INTO products (name, description, category_id) VALUES ('Establecimiento Adicional (Micro a Especial II)', 'Sucursal extra (Planes Micro a Especial II)', cat_mod_id) RETURNING id INTO prod_id;
+    INSERT INTO products (name, description, category_id) VALUES ('Establecimiento Adicional', 'Sucursal extra (Planes Micro a Especial II)', cat_mod_id) RETURNING id INTO prod_id;
     INSERT INTO prices (product_id, channel_id, price, duration_label) VALUES (prod_id, chan_azur_id, 25.00, '1 AÑO'), (prod_id, chan_local_id, 25.00, '1 AÑO');
 
     INSERT INTO products (name, description, category_id) VALUES ('Generación de ATS', 'Anexo Transaccional', cat_mod_id) RETURNING id INTO prod_id;
