@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Check, X, Copy, AlertTriangle, Save } from 'lucide-react';
+import { Check, X, Copy, AlertTriangle, Save, Calculator, BookOpen } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { fetchProductsByChannel } from '../services/pricingService';
 import { formatCurrency, roundToTwo, formatDate } from '../utils/format';
@@ -10,10 +10,12 @@ export default function PlanChange() {
     const { canalSeleccionado } = useApp();
 
     // Data State
+    const [allProducts, setAllProducts] = useState([]);
     const [plansData, setPlansData] = useState({});
     const [loading, setLoading] = useState(true);
 
     // UI State
+    const [planCategoryType, setPlanCategoryType] = useState('ESTÁNDAR'); // 'ESTÁNDAR' | 'CONTABLE'
     const [currentPlanName, setCurrentPlanName] = useState('');
     const [newPlanName, setNewPlanName] = useState('');
     const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
@@ -26,54 +28,59 @@ export default function PlanChange() {
     const [copyNotification, setCopyNotification] = useState('');
     const [isSaleModalOpen, setIsSaleModalOpen] = useState(false);
 
-    // Fetch Data
+    // Fetch Products
     useEffect(() => {
-        async function loadPlans() {
+        async function loadProducts() {
             setLoading(true);
             try {
                 const products = await fetchProductsByChannel(canalSeleccionado);
                 const safeProducts = Array.isArray(products) ? products : [];
-                const plans = safeProducts.filter(p =>
-                    p.category?.code === 'PLAN' &&
-                    p.name &&
-                    !p.name.toUpperCase().includes('CONTABLE') &&
-                    !['PLAN TRANSICIÓN'].includes(p.name)
-                );
-
-                // Transform to map structure needed by component: { "PLAN NAME": { price: X, features: {} } }
-                const plansMap = {};
-
-                // Ordenar los planes de menor a mayor precio para que el Plan Esencial salga primero
-                const sortedPlans = plans.map(p => {
-                    const prices = Array.isArray(p.prices) ? p.prices : [];
-                    const defaultPrice = prices.find(pr => pr.duration_label === '1 AÑO')?.price || prices[0]?.price || 0;
-                    return { ...p, extractedPrice: defaultPrice };
-                }).sort((a, b) => a.extractedPrice - b.extractedPrice);
-
-                sortedPlans.forEach(p => {
-                    plansMap[p.name] = {
-                        price: p.extractedPrice,
-                        features: p.features || {}
-                    };
-                });
-
-                setPlansData(plansMap);
-
-                // Initialize selection if empty or invalid
-                const names = Object.keys(plansMap);
-                if (names.length > 0) {
-                    if (!currentPlanName || !names.includes(currentPlanName)) setCurrentPlanName(names[0]);
-                    if (!newPlanName || !names.includes(newPlanName)) setNewPlanName(names[1] || names[0]);
-                }
+                setAllProducts(safeProducts);
             } catch (err) {
                 console.error("Error loading plans:", err);
+                setAllProducts([]);
             } finally {
                 setLoading(false);
             }
         }
-        loadPlans();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        loadProducts();
     }, [canalSeleccionado]);
+
+    // Process & Filter plans whenever category type or products change
+    useEffect(() => {
+        const plans = allProducts.filter(p => {
+            if (p.category?.code !== 'PLAN' || !p.name || ['PLAN TRANSICIÓN'].includes(p.name)) return false;
+            const isContable = p.name.toUpperCase().includes('CONTABLE');
+            return planCategoryType === 'CONTABLE' ? isContable : !isContable;
+        });
+
+        // Transform to map structure needed by component: { "PLAN NAME": { price: X, features: {} } }
+        const plansMap = {};
+
+        const sortedPlans = plans.map(p => {
+            const prices = Array.isArray(p.prices) ? p.prices : [];
+            const defaultPrice = prices.find(pr => pr.duration_label === '1 AÑO')?.price || prices[0]?.price || 0;
+            return { ...p, extractedPrice: defaultPrice };
+        }).sort((a, b) => a.extractedPrice - b.extractedPrice);
+
+        sortedPlans.forEach(p => {
+            plansMap[p.name] = {
+                price: p.extractedPrice,
+                features: p.features || {}
+            };
+        });
+
+        setPlansData(plansMap);
+
+        const names = Object.keys(plansMap);
+        if (names.length > 0) {
+            setCurrentPlanName(names[0]);
+            setNewPlanName(names[1] || names[0]);
+        } else {
+            setCurrentPlanName('');
+            setNewPlanName('');
+        }
+    }, [allProducts, planCategoryType]);
 
     const planNames = Object.keys(plansData);
 
@@ -88,7 +95,6 @@ export default function PlanChange() {
 
     // Logic
     const calculation = useMemo(() => {
-        // If data is not loaded yet or selection invalid
         if (!plansData[currentPlanName] || !plansData[newPlanName]) {
             return { isReady: false };
         }
@@ -96,7 +102,6 @@ export default function PlanChange() {
         const currentPlan = plansData[currentPlanName];
         const newPlan = plansData[newPlanName];
 
-        // Dates match logic
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const endD = new Date(endDate);
@@ -112,8 +117,8 @@ export default function PlanChange() {
             return { isReady: true, error: "La fecha de finalización debe ser posterior a la de inicio." };
         }
 
-        if (isDowngrade && isContractActive) {
-            return { isReady: true, error: "DOWNGRADE_NOT_ALLOWED", isDowngrade: true, isContractActive: true };
+        if (isDowngrade) {
+            return { isReady: true, error: "DOWNGRADE_NOT_ALLOWED", isDowngrade: true, isContractActive };
         }
 
         const credit = currentPlan.price;
@@ -147,7 +152,6 @@ export default function PlanChange() {
         const newPlan = plansData[newPlanName];
 
         if (ranOut && !calculation.isDowngrade) {
-            // ... Logic for Ran Out ...
             const today = new Date();
             const nextYear = new Date(new Date().setFullYear(today.getFullYear() + 1));
             const todayStr = formatDate(today);
@@ -160,7 +164,7 @@ export default function PlanChange() {
 
             const newPlanPrice = newPlan.price;
             const newPlanPriceWithIva = formatCurrency(newPlanPrice * (1 + IVA_RATE));
-            const newPlanComprobantes = newPlan.features?.['Comprobantes año'] || 'N/A';
+            const newPlanComprobantes = newPlan.features?.['Comprobantes año'] || newPlan.features?.['Comprobantes mes'] || 'N/A';
             const denominacionNuevo = newPlanName === 'PLAN ESENCIAL' ? 'facturas anuales' : 'comprobantes anuales';
             const option1Text = `OPCIÓN 1: Contratar un ${newPlanName} (${newPlanComprobantes} ${denominacionNuevo}) que empiece desde el día de hoy ${todayStr} y le caduque el ${nextYearStr}. Tendría que pagar ${formatCurrency(newPlanPrice)} + IVA (${newPlanPriceWithIva} final).`;
 
@@ -189,18 +193,18 @@ export default function PlanChange() {
         let financialSummary = "";
         let vigenciaText = "";
 
-        if (calculation.isDowngrade && calculation.isContractActive) {
-            financialSummary = "El downgrade de plan solo es posible al momento de la renovación del servicio.";
+        if (calculation.isDowngrade) {
+            financialSummary = "No se permite el cambio a un plan menor (downgrade). Solo se permiten cambios de un plan menor a uno mayor (upgrade).";
         } else {
             const originalStartDate = new Date(startDate);
             const originalEndDate = new Date(endDate);
 
             if (calculation.isContractActive && !calculation.isDowngrade) {
-                vigenciaText = `La vigencia de su plan sera desde ${formatDate(originalStartDate)} hasta el ${formatDate(originalEndDate)}.`;
+                vigenciaText = `La vigencia de su plan será desde ${formatDate(originalStartDate)} hasta el ${formatDate(originalEndDate)}.`;
             } else {
                 const today = new Date();
                 const nextYear = new Date(new Date().setFullYear(today.getFullYear() + 1));
-                vigenciaText = `La vigencia de su plan sera desde ${formatDate(today)} hasta el ${formatDate(nextYear)}.`;
+                vigenciaText = `La vigencia de su plan será desde ${formatDate(today)} hasta el ${formatDate(nextYear)}.`;
             }
 
             if ((calculation.difference || 0) > 0) {
@@ -223,6 +227,9 @@ export default function PlanChange() {
 
         const FEATURE_ALIASES = {
             "Comprobantes año": ["Comprobantes año", "Comprobantes al año", "Comprobantes / año"],
+            "Comprobantes mes": ["Comprobantes mes", "Comprobantes al mes"],
+            "Límite API REST": ["Límite API REST", "Límite API REST (anual)", "Límite API"],
+            "Empleados (Nómina)": ["Empleados (Nómina)", "Empleados en nómina", "Empleados"],
             "Usuarios": ["Usuarios"],
             "Empresas": ["Empresas"],
             "Establecimientos": ["Establecimientos"],
@@ -236,6 +243,10 @@ export default function PlanChange() {
             "Proformas": ["Proformas", "Proforma"],
             "Inventario": ["Inventario"],
             "Compras": ["Compras"],
+            "Contabilidad Automática": ["Contabilidad Automática", "Contabilidad automática"],
+            "Estados Financieros": ["Estados Financieros", "Estados financieros"],
+            "Bancos y Cartera": ["Bancos y Cartera", "Bancos y cartera"],
+            "Nómina": ["Nómina", "Módulo de nómina"],
             "Reportes": ["Reportes"],
             "Cuentas por cobrar": ["Cuentas por cobrar", "Cuentas por Cobrar"],
             "Cuentas por pagar": ["Cuentas por pagar", "Cuentas por Pagar"],
@@ -298,7 +309,7 @@ export default function PlanChange() {
                 gains.push(`✅ Ahora tendrá ${newValNum.toLocaleString('es-EC')} ${displayName}`);
             } else { // both are strings
                 if (oldValue !== newValue && oldValue !== undefined && newValue !== undefined) {
-                    gains.push(`✅ ${displayName} cambia de ${oldValue} a ${newValue}`);
+                    gains.push(`✅ ${displayName} cambia de "${oldValue}" a "${newValue}"`);
                 }
             }
         });
@@ -325,10 +336,36 @@ export default function PlanChange() {
 
     return (
         <div className="max-w-7xl mx-auto p-6 font-sans">
-            <header className="mb-8 text-center">
+            <header className="mb-6 text-center">
                 <h1 className="text-3xl font-bold text-slate-800">Calculadora de Cambio de Plan</h1>
                 <div className="mt-2 text-slate-500">
                     Canal: <span className="font-semibold text-blue-600">{canalSeleccionado}</span> (Precios base mostrados)
+                </div>
+
+                {/* Switch Tipo de Plan (Estándar vs Contable) */}
+                <div className="mt-6 inline-flex bg-slate-100 p-1.5 rounded-xl border border-slate-200 shadow-inner">
+                    <button
+                        onClick={() => setPlanCategoryType('ESTÁNDAR')}
+                        className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${
+                            planCategoryType === 'ESTÁNDAR'
+                                ? 'bg-white text-blue-700 shadow-md border border-slate-200/60'
+                                : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                    >
+                        <Calculator size={16} />
+                        Planes Estándar
+                    </button>
+                    <button
+                        onClick={() => setPlanCategoryType('CONTABLE')}
+                        className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${
+                            planCategoryType === 'CONTABLE'
+                                ? 'bg-white text-emerald-700 shadow-md border border-slate-200/60'
+                                : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                    >
+                        <BookOpen size={16} />
+                        Planes Contables
+                    </button>
                 </div>
             </header>
 
@@ -336,7 +373,7 @@ export default function PlanChange() {
                 <div className="py-12 text-center text-slate-400">Cargando planes del canal {canalSeleccionado}...</div>
             ) : planNames.length === 0 ? (
                 <div className="bg-white rounded-2xl p-8 text-center text-slate-500 border border-slate-200 shadow-sm">
-                    No se encontraron planes disponibles para el canal {canalSeleccionado}.
+                    No se encontraron {planCategoryType === 'CONTABLE' ? 'planes contables' : 'planes estándar'} disponibles para el canal {canalSeleccionado}.
                 </div>
             ) : (
                 <>
@@ -344,14 +381,19 @@ export default function PlanChange() {
                         {/* Panel de Configuración */}
                         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 space-y-6">
                             <div>
-                                <h2 className="text-xl font-semibold text-slate-700 mb-4">1. Plan Actual del Cliente</h2>
+                                <h2 className="text-xl font-semibold text-slate-700 mb-4 flex items-center justify-between">
+                                    <span>1. Plan Actual del Cliente</span>
+                                    <span className={`text-xs px-3 py-1 rounded-full font-bold ${planCategoryType === 'CONTABLE' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'}`}>
+                                        {planCategoryType === 'CONTABLE' ? 'Categoría Contable' : 'Categoría Estándar'}
+                                    </span>
+                                </h2>
                                 <div className="space-y-4">
                                     <div>
                                         <label className="block text-sm font-medium text-slate-600 mb-1">Seleccionar Plan Actual</label>
                                         <select
                                             value={currentPlanName}
                                             onChange={(e) => setCurrentPlanName(e.target.value)}
-                                            className="w-full px-4 py-3 bg-slate-50 border border-slate-300 text-slate-900 rounded-lg focus:ring-2 focus:ring-blue-500 transition outline-none"
+                                            className="w-full px-4 py-3 bg-slate-50 border border-slate-300 text-slate-900 rounded-lg focus:ring-2 focus:ring-blue-500 transition outline-none font-medium"
                                         >
                                             {planNames.map(name => (
                                                 <option key={name} value={name}>{name} ({formatCurrency(plansData[name]?.price || 0)}/Año)</option>
@@ -388,7 +430,7 @@ export default function PlanChange() {
                                     <select
                                         value={newPlanName}
                                         onChange={(e) => setNewPlanName(e.target.value)}
-                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-300 text-slate-900 rounded-lg focus:ring-2 focus:ring-blue-500 transition outline-none"
+                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-300 text-slate-900 rounded-lg focus:ring-2 focus:ring-blue-500 transition outline-none font-medium"
                                     >
                                         {planNames.map(name => (
                                             <option key={name} value={name}>{name} ({formatCurrency(plansData[name]?.price || 0)}/Año)</option>
@@ -421,9 +463,9 @@ export default function PlanChange() {
                             ) : calculation.error === "DOWNGRADE_NOT_ALLOWED" ? (
                                 <div className="text-center py-8">
                                     <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-3" />
-                                    <h3 className="font-semibold text-lg text-amber-700">Acción no permitida</h3>
-                                    <p className="text-slate-600 mt-2">No se puede realizar un downgrade (bajar de plan) mientras la vigencia actual esté activa.</p>
-                                    <p className="text-sm text-slate-500 mt-1">Esta acción solo es posible al momento de la renovación.</p>
+                                    <h3 className="font-semibold text-lg text-amber-700">Cambio a plan menor no permitido</h3>
+                                    <p className="text-slate-600 mt-2">Solo se permiten cambios de un plan menor a uno mayor (upgrade).</p>
+                                    <p className="text-sm text-slate-500 mt-1">No es posible realizar un downgrade a un plan de menor valor.</p>
                                 </div>
                             ) : (
                                 <div className="space-y-4">
@@ -501,7 +543,7 @@ export default function PlanChange() {
                     {/* Tabla Comparativa */}
                     {calculation.isReady && !calculation.error && plansData[currentPlanName] && plansData[newPlanName] && (
                         <div className="mt-8 bg-white rounded-2xl shadow-sm border border-slate-200 p-8 overflow-hidden">
-                            <h2 className="text-2xl font-bold text-slate-800 text-center mb-6">Comparativa de Planes</h2>
+                            <h2 className="text-2xl font-bold text-slate-800 text-center mb-6">Comparativa de Planes ({planCategoryType === 'CONTABLE' ? 'Contables' : 'Estándar'})</h2>
                             <div className="overflow-x-auto">
                                 <table className="w-full min-w-max text-left border-collapse">
                                     <thead className="bg-slate-50">
@@ -515,6 +557,9 @@ export default function PlanChange() {
                                         {FEATURE_ORDER.map(feature => {
                                             const FEATURE_ALIASES = {
                                                 "Comprobantes año": ["Comprobantes año", "Comprobantes al año", "Comprobantes / año"],
+                                                "Comprobantes mes": ["Comprobantes mes", "Comprobantes al mes"],
+                                                "Límite API REST": ["Límite API REST", "Límite API REST (anual)", "Límite API"],
+                                                "Empleados (Nómina)": ["Empleados (Nómina)", "Empleados en nómina", "Empleados"],
                                                 "Usuarios": ["Usuarios"],
                                                 "Empresas": ["Empresas"],
                                                 "Establecimientos": ["Establecimientos"],
@@ -528,6 +573,10 @@ export default function PlanChange() {
                                                 "Proformas": ["Proformas", "Proforma"],
                                                 "Inventario": ["Inventario"],
                                                 "Compras": ["Compras"],
+                                                "Contabilidad Automática": ["Contabilidad Automática", "Contabilidad automática"],
+                                                "Estados Financieros": ["Estados Financieros", "Estados financieros"],
+                                                "Bancos y Cartera": ["Bancos y Cartera", "Bancos y cartera"],
+                                                "Nómina": ["Nómina", "Módulo de nómina"],
                                                 "Reportes": ["Reportes"],
                                                 "Cuentas por cobrar": ["Cuentas por cobrar", "Cuentas por Cobrar"],
                                                 "Cuentas por pagar": ["Cuentas por pagar", "Cuentas por Pagar"],
@@ -553,6 +602,9 @@ export default function PlanChange() {
                                             if (feature === 'Comprobantes año' && (currentPlanName === 'PLAN ESENCIAL' || newPlanName === 'PLAN ESENCIAL')) {
                                                 displayName = 'Comprobantes / Facturas año';
                                             }
+
+                                            // Si ambas no están definidas para ninguna clave, omitir fila
+                                            if (currentVal === undefined && newVal === undefined) return null;
 
                                             // Normalización para comparación
                                             const normCurrent = currentVal === undefined ? false : currentVal;
@@ -588,12 +640,12 @@ export default function PlanChange() {
                 onClose={() => setIsSaleModalOpen(false)}
                 total={calculation?.difference > 0 ? (calculation.totalAPagar || 0) : 0}
                 cartItems={[{
-                    item: `Cambio de Plan: ${currentPlanName} -> ${newPlanName}`, 
+                    item: `Cambio de Plan (${planCategoryType}): ${currentPlanName} -> ${newPlanName}`, 
                     price: calculation?.difference > 0 ? (calculation.totalAPagar || 0) : 0, 
                     desc: ranOut ? 'Cliente agotó comprobantes' : 'Cambio regular'
                 }]}
                 planAmount={calculation?.difference > 0 ? (calculation.totalAPagar || 0) : 0}
-                description={`Cambio de Plan: ${currentPlanName} -> ${newPlanName}`}
+                description={`Cambio de Plan (${planCategoryType}): ${currentPlanName} -> ${newPlanName}`}
             />
         </div>
     );
