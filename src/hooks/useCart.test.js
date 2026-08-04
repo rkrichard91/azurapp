@@ -188,4 +188,98 @@ describe('useCart Hook', () => {
         expect(copiedText).toContain('Total $20+iva');
         expect(copiedText).toContain('Valor final $23.00');
     });
+
+    it('should support adding multiple plans to cart and calculating totals', () => {
+        const mockPlanProducts = [
+            {
+                id: 'plan-1',
+                name: 'Plan Pyme Ilimitado',
+                prices: [{ id: 'p-1', price: 100, duration_label: '1 Año' }]
+            },
+            {
+                id: 'plan-2',
+                name: 'Plan Pro Ilimitado',
+                prices: [{ id: 'p-2', price: 200, duration_label: '1 Año' }]
+            }
+        ];
+
+        const { result } = renderHook(() => useCart({
+            ...initialProps,
+            planProducts: mockPlanProducts
+        }));
+
+        act(() => {
+            result.current.openPlanModal();
+        });
+
+        act(() => {
+            result.current.setPlanForm({
+                productId: 'plan-1',
+                priceId: 'p-1',
+                months: 1,
+                discount: 10 // 10% de descuento -> 90
+            });
+        });
+
+        act(() => {
+            result.current.confirmAddPlan();
+        });
+
+        act(() => {
+            result.current.openPlanModal();
+        });
+
+        act(() => {
+            result.current.setPlanForm({
+                productId: 'plan-2',
+                priceId: 'p-2',
+                months: 1,
+                discount: 0 // 200
+            });
+        });
+
+        act(() => {
+            result.current.confirmAddPlan();
+        });
+
+        const planItems = result.current.cartItems.filter(i => i.type === 'PLAN');
+        expect(planItems.length).toBe(2);
+        expect(planItems[0].total).toBe(90);
+        expect(planItems[1].total).toBe(200);
+        expect(result.current.subtotal).toBe(290);
+    });
+
+    it('should remove specific plan when handleRemoveItem is called', () => {
+        const mockPlanProducts = [
+            {
+                id: 'plan-1',
+                name: 'Plan Pyme Ilimitado',
+                prices: [{ id: 'p-1', price: 100, duration_label: '1 Año' }]
+            }
+        ];
+
+        const { result } = renderHook(() => useCart({
+            ...initialProps,
+            planProducts: mockPlanProducts
+        }));
+
+        act(() => {
+            result.current.openPlanModal();
+        });
+        act(() => {
+            result.current.setPlanForm({ productId: 'plan-1', priceId: 'p-1', months: 1, discount: 0 });
+        });
+        act(() => {
+            result.current.confirmAddPlan();
+        });
+
+        expect(result.current.cartItems.filter(i => i.type === 'PLAN').length).toBe(1);
+
+        const item = result.current.cartItems.find(i => i.type === 'PLAN');
+        act(() => {
+            result.current.handleRemoveItem(item);
+        });
+
+        expect(result.current.cartItems.filter(i => i.type === 'PLAN').length).toBe(0);
+    });
 });

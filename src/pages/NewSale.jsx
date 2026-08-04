@@ -6,6 +6,7 @@ import { formatCurrency } from '../utils/format';
 import { useProducts } from '../hooks/useProducts';
 import { useCart } from '../hooks/useCart';
 import SignatureSection from '../components/sale/SignatureSection';
+import PlanSection from '../components/sale/PlanSection';
 import ModuleSection from '../components/sale/ModuleSection';
 import CartSummary from '../components/sale/CartSummary';
 
@@ -134,83 +135,17 @@ export default function NewSale() {
                 <div className="md:col-span-2 space-y-6">
 
                     {/* 1. PLAN */}
-                    <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                                <span className="text-xl">📦</span>
-                            </div>
-                            <h2 className="text-lg font-bold text-slate-800">Plan de Facturación</h2>
-                        </div>
-
-                        <div className="flex gap-4">
-                            <div className="relative flex-1">
-                                <select
-                                    value={cart.selectedPlanId}
-                                    onChange={(e) => {
-                                        cart.setSelectedPlanId(e.target.value);
-                                        cart.setSelectedPlanPriceId("");
-                                        cart.setPlanMonths(1);
-                                    }}
-                                    className="w-full p-4 bg-slate-50 border border-slate-200 rounded-lg appearance-none text-slate-700 font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                                >
-                                    <option value="">No Incluir Plan</option>
-                                    {planProducts.map(p => (
-                                        <option key={p.id} value={p.id}>{p.name} - {p.prices && p.prices[0] ? formatCurrency(p.prices[0].price) : '$?'}</option>
-                                    ))}
-                                </select>
-                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">▼</div>
-                            </div>
-
-                            {/* SELECTOR DE VIGENCIA SI APLICA */}
-                            {cart.selectedPlanId && !planProducts.find(p => p.id === cart.selectedPlanId)?.name.toUpperCase().includes("TRANSICI") && (
-                                <div className="relative w-48 animate-in fade-in slide-in-from-left-2">
-                                    <select
-                                        value={cart.selectedPlanPriceId || (planProducts.find(p => p.id === cart.selectedPlanId)?.prices?.[0]?.id || '')}
-                                        onChange={(e) => cart.setSelectedPlanPriceId(e.target.value)}
-                                        className="w-full p-4 bg-slate-50 border border-slate-200 rounded-lg appearance-none text-slate-700 font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                                    >
-                                        {planProducts.find(p => p.id === cart.selectedPlanId)?.prices?.map(pr => (
-                                            <option key={pr.id} value={pr.id}>{pr.duration_label}</option>
-                                        ))}
-                                    </select>
-                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">▼</div>
-                                </div>
-                            )}
-
-                            {planProducts.find(p => p.id === cart.selectedPlanId)?.name.toUpperCase().includes("TRANSICI") && (
-                                <div className="w-24">
-                                    <input
-                                        type="number"
-                                        min="1"
-                                        value={cart.planMonths}
-                                        onChange={(e) => cart.setPlanMonths(Math.max(1, parseInt(e.target.value) || 1))}
-                                        className="w-full p-4 bg-slate-50 border border-slate-200 rounded-lg text-center text-slate-700 font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                                        placeholder="Meses"
-                                    />
-                                </div>
-                            )}
-
-                            {cart.selectedPlanId && (
-                                <div className="w-28 relative" title="Descuento (Máx 20%)">
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        max="20"
-                                        value={cart.planDiscount || ''}
-                                        onChange={(e) => {
-                                            let val = parseInt(e.target.value) || 0;
-                                            if (val > 20) val = 20;
-                                            if (val < 0) val = 0;
-                                            cart.setPlanDiscount(val);
-                                        }}
-                                        className="w-full p-4 pr-8 bg-slate-50 border border-slate-200 rounded-lg text-center text-slate-700 font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                                        placeholder="Desc%"
-                                    />
-                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">%</span>
-                                </div>
-                            )}
-                        </div>
-                    </div>
+                    <PlanSection
+                        selectedPlans={cart.selectedPlans}
+                        setSelectedPlans={cart.setSelectedPlans}
+                        planProducts={planProducts}
+                        showPlanModal={cart.showPlanModal}
+                        setShowPlanModal={cart.setShowPlanModal}
+                        planForm={cart.planForm}
+                        setPlanForm={cart.setPlanForm}
+                        openPlanModal={cart.openPlanModal}
+                        confirmAddPlan={cart.confirmAddPlan}
+                    />
 
                     {/* 2. FIRMAS */}
                     <SignatureSection

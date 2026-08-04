@@ -6,17 +6,23 @@ import { IVA_RATE, EMISSION_POINT_TIERS } from '../constants';
  */
 export function useCart({ planProducts, signatureProducts, moduleProducts, emissionPointProduct, signatureOptions, canalSeleccionado }) {
     // Selecciones
-    const [selectedPlanId, setSelectedPlanId] = useState("");
-    const [selectedPlanPriceId, setSelectedPlanPriceId] = useState("");
-    const [planMonths, setPlanMonths] = useState(1); // Nuevo estado para meses del plan
-    const [planDiscount, setPlanDiscount] = useState(0);
+    const [selectedPlans, setSelectedPlans] = useState([]); // [{ id, productId, priceId, months, discount }]
     const [emissionPoints, setEmissionPoints] = useState(0);
     const [selectedSignatures, setSelectedSignatures] = useState([]);
     const [selectedModules, setSelectedModules] = useState([]);
 
     // Modal states
+    const [showPlanModal, setShowPlanModal] = useState(false);
     const [showSignatureModal, setShowSignatureModal] = useState(false);
     const [showModuleModal, setShowModuleModal] = useState(false);
+
+    // Formulario de plan
+    const [planForm, setPlanForm] = useState({
+        productId: "",
+        priceId: "",
+        months: 1,
+        discount: 0
+    });
 
     // Formulario de firma
     const [sigForm, setSigForm] = useState({
@@ -36,35 +42,39 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
     const cartItems = useMemo(() => {
         const items = [];
 
-        // 1. Plan
-        if (selectedPlanId) {
-            const plan = planProducts.find(p => p.id === selectedPlanId);
+        // 1. Planes
+        selectedPlans.forEach(planItem => {
+            const plan = planProducts.find(p => p.id === planItem.productId);
             if (plan) {
                 let priceObj = null;
-                if (selectedPlanPriceId) {
-                    priceObj = plan.prices?.find(pr => pr.id === selectedPlanPriceId);
+                if (planItem.priceId) {
+                    priceObj = plan.prices?.find(pr => pr.id === planItem.priceId);
                 }
                 if (!priceObj) {
                     priceObj = plan.prices ? plan.prices[0] : null;
                 }
-                const quantity = plan.name.toUpperCase().includes("TRANSICI") ? planMonths : 1;
+                const months = planItem.months || 1;
+                const discount = planItem.discount || 0;
+                const quantity = plan.name.toUpperCase().includes("TRANSICI") ? months : 1;
 
                 let unitPrice = priceObj ? parseFloat(priceObj.price) : 0;
-                if (planDiscount > 0) {
-                    unitPrice = unitPrice * (1 - (planDiscount / 100));
+                if (discount > 0) {
+                    unitPrice = unitPrice * (1 - (discount / 100));
                 }
                 const total = unitPrice * quantity;
 
                 items.push({
                     type: 'PLAN',
+                    _planId: planItem.id,
                     name: plan.name,
                     quantity: quantity,
                     unitPrice: unitPrice,
                     total: total,
-                    duration: priceObj ? priceObj.duration_label : ''
+                    duration: priceObj ? priceObj.duration_label : '',
+                    discount: discount
                 });
             }
-        }
+        });
 
         // 2. Firmas
         selectedSignatures.forEach(sig => {
@@ -179,7 +189,7 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
         }
 
         return items;
-    }, [selectedPlanId, selectedPlanPriceId, planMonths, planDiscount, selectedSignatures, selectedModules, emissionPoints, planProducts, signatureProducts, moduleProducts, emissionPointProduct]);
+    }, [selectedPlans, selectedSignatures, selectedModules, emissionPoints, planProducts, signatureProducts, moduleProducts, emissionPointProduct]);
 
     // Totales
     const subtotal = cartItems.reduce((acc, item) => acc + item.total, 0);
@@ -205,8 +215,67 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
         return { base: unit, total: unit * (1 + IVA_RATE) };
     }, [sigForm, signatureProducts]);
 
-    // --- Handlers ---
+    // Handlers legacy
+    const selectedPlanId = selectedPlans[0]?.productId || "";
+    const setSelectedPlanId = (val) => {
+        if (!val) {
+            setSelectedPlans([]);
+        } else {
+            const prod = planProducts.find(p => p.id === val);
+            const firstPrice = prod?.prices?.[0];
+            setSelectedPlans([{
+                id: crypto.randomUUID(),
+                productId: val,
+                priceId: firstPrice?.id || "",
+                months: 1,
+                discount: 0
+            }]);
+        }
+    };
+    const selectedPlanPriceId = selectedPlans[0]?.priceId || "";
+    const setSelectedPlanPriceId = (val) => {
+        if (selectedPlans.length > 0) {
+            setSelectedPlans(prev => prev.map((p, i) => i === 0 ? { ...p, priceId: val } : p));
+        }
+    };
+    const planMonths = selectedPlans[0]?.months || 1;
+    const setPlanMonths = (val) => {
+        if (selectedPlans.length > 0) {
+            setSelectedPlans(prev => prev.map((p, i) => i === 0 ? { ...p, months: val } : p));
+        }
+    };
+    const planDiscount = selectedPlans[0]?.discount || 0;
+    const setPlanDiscount = (val) => {
+        if (selectedPlans.length > 0) {
+            setSelectedPlans(prev => prev.map((p, i) => i === 0 ? { ...p, discount: val } : p));
+        }
+    };
 
+    // --- Handlers para Modal de Planes ---
+    const openPlanModal = () => {
+        if (planProducts && planProducts.length > 0) {
+            const defaultProd = planProducts[0];
+            const defaultPriceObj = defaultProd.prices?.[0];
+            setPlanForm({
+                productId: defaultProd.id,
+                priceId: defaultPriceObj?.id || "",
+                months: 1,
+                discount: 0
+            });
+        }
+        setShowPlanModal(true);
+    };
+
+    const confirmAddPlan = () => {
+        if (!planForm.productId) {
+            alert("Seleccione un plan válido.");
+            return;
+        }
+        setSelectedPlans(prev => [...prev, { ...planForm, id: crypto.randomUUID() }]);
+        setShowPlanModal(false);
+    };
+
+    // --- Handlers de Firma ---
     const openSignatureModal = () => {
         if (signatureOptions.length > 0) {
             const defaultOpt = signatureOptions[0];
@@ -238,10 +307,11 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
 
     const handleRemoveItem = (item) => {
         if (item.type === 'PLAN') {
-            setSelectedPlanId("");
-            setSelectedPlanPriceId("");
-            setPlanMonths(1);
-            setPlanDiscount(0);
+            if (item._planId) {
+                setSelectedPlans(prev => prev.filter(p => p.id !== item._planId));
+            } else {
+                setSelectedPlans([]);
+            }
         }
         if (item.type === 'SIGNATURE') {
             setSelectedSignatures(prev => prev.filter(s => s.id !== item._sigId));
@@ -310,10 +380,7 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
 
     const handleClear = () => {
         if (window.confirm("¿Borrar toda la cotización?")) {
-            setSelectedPlanId("");
-            setSelectedPlanPriceId("");
-            setPlanMonths(1);
-            setPlanDiscount(0);
+            setSelectedPlans([]);
             setSelectedSignatures([]);
             setSelectedModules([]);
             setEmissionPoints(0);
@@ -322,6 +389,9 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
 
     return {
         // Estado
+        selectedPlans, setSelectedPlans,
+        showPlanModal, setShowPlanModal,
+        planForm, setPlanForm,
         selectedPlanId, setSelectedPlanId,
         selectedPlanPriceId, setSelectedPlanPriceId,
         planMonths, setPlanMonths,
@@ -336,6 +406,8 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
         cartItems, subtotal, iva, total,
         currentSigPrice,
         // Handlers
+        openPlanModal,
+        confirmAddPlan,
         openSignatureModal,
         confirmAddSignature,
         handleRemoveItem,

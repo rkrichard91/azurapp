@@ -47,19 +47,19 @@ BEGIN
     SET features = jsonb_set(jsonb_set(features, '{Usuarios}', '5'::jsonb), '{API REST}', 'true'::jsonb)
     WHERE name = 'PLAN ESPECIAL II';
 
-    -- PLAN ILIMITADO (ATS es TRUE según la matriz)
+    -- PLAN ILIMITADO (ATS y API REST son TRUE según la matriz)
     UPDATE public.products 
-    SET features = jsonb_set(jsonb_set(jsonb_set(jsonb_set(features, '{Comprobantes año}', '"Ilimitado"'::jsonb), '{Usuarios}', '5'::jsonb), '{Establecimientos}', '3'::jsonb), '{ATS}', 'true'::jsonb)
+    SET features = jsonb_set(jsonb_set(jsonb_set(jsonb_set(jsonb_set(features, '{Comprobantes año}', '"Ilimitado"'::jsonb), '{Usuarios}', '5'::jsonb), '{Establecimientos}', '3'::jsonb), '{ATS}', 'true'::jsonb), '{API REST}', 'true'::jsonb)
     WHERE name = 'PLAN ILIMITADO';
 
     -- PLAN ILIMITADO PLUS
     UPDATE public.products 
-    SET features = jsonb_set(jsonb_set(jsonb_set(jsonb_set(features, '{Comprobantes año}', '"Ilimitado"'::jsonb), '{Usuarios}', '5'::jsonb), '{Establecimientos}', '3'::jsonb), '{ATS}', 'true'::jsonb)
+    SET features = jsonb_set(jsonb_set(jsonb_set(jsonb_set(jsonb_set(features, '{Comprobantes año}', '"Ilimitado"'::jsonb), '{Usuarios}', '5'::jsonb), '{Establecimientos}', '3'::jsonb), '{ATS}', 'true'::jsonb), '{API REST}', 'true'::jsonb)
     WHERE name = 'PLAN ILIMITADO PLUS';
 
     -- PLAN ILIMITADO PRO
     UPDATE public.products 
-    SET features = jsonb_set(jsonb_set(jsonb_set(jsonb_set(features, '{Comprobantes año}', '"Ilimitado"'::jsonb), '{Usuarios}', '5'::jsonb), '{Establecimientos}', '3'::jsonb), '{ATS}', 'true'::jsonb)
+    SET features = jsonb_set(jsonb_set(jsonb_set(jsonb_set(jsonb_set(features, '{Comprobantes año}', '"Ilimitado"'::jsonb), '{Usuarios}', '5'::jsonb), '{Establecimientos}', '3'::jsonb), '{ATS}', 'true'::jsonb), '{API REST}', 'true'::jsonb)
     WHERE name = 'PLAN ILIMITADO PRO';
 
     -- 2. Insertar Módulo de Usuario Adicional para Planes Ilimitados ($30/año)

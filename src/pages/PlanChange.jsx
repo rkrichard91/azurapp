@@ -64,9 +64,16 @@ export default function PlanChange() {
         }).sort((a, b) => a.extractedPrice - b.extractedPrice);
 
         sortedPlans.forEach(p => {
+            const feat = { ...(p.features || {}) };
+            if (feat['API REST'] === undefined && p.name) {
+                const nameUpper = p.name.toUpperCase();
+                if (nameUpper.includes('ILIMITADO') || nameUpper.includes('EXPRESS') || nameUpper.includes('ESPECIAL') || nameUpper.includes('BÁSICO II')) {
+                    feat['API REST'] = true;
+                }
+            }
             plansMap[p.name] = {
                 price: p.extractedPrice,
-                features: p.features || {}
+                features: feat
             };
         });
 
