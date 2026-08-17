@@ -21,6 +21,7 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
         productId: "",
         priceId: "",
         months: 1,
+        quantity: 1,
         discount: 0
     });
 
@@ -54,8 +55,10 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
                     priceObj = plan.prices ? plan.prices[0] : null;
                 }
                 const months = planItem.months || 1;
+                const planQty = Math.max(1, parseInt(planItem.quantity) || 1);
                 const discount = planItem.discount || 0;
-                const quantity = plan.name.toUpperCase().includes("TRANSICI") ? months : 1;
+                const isTransition = plan.name.toUpperCase().includes("TRANSICI");
+                const quantity = isTransition ? (months * planQty) : planQty;
 
                 let unitPrice = priceObj ? parseFloat(priceObj.price) : 0;
                 if (discount > 0) {
@@ -68,6 +71,7 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
                     _planId: planItem.id,
                     name: plan.name,
                     quantity: quantity,
+                    planQty: planQty,
                     unitPrice: unitPrice,
                     total: total,
                     duration: priceObj ? priceObj.duration_label : '',
@@ -260,6 +264,7 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
                 productId: defaultProd.id,
                 priceId: defaultPriceObj?.id || "",
                 months: 1,
+                quantity: 1,
                 discount: 0
             });
         }

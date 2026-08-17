@@ -282,4 +282,36 @@ describe('useCart Hook', () => {
 
         expect(result.current.cartItems.filter(i => i.type === 'PLAN').length).toBe(0);
     });
+
+    it('should support adding a plan with quantity > 1', () => {
+        const mockPlanProducts = [
+            {
+                id: 'plan-1',
+                name: 'Plan Pyme Ilimitado',
+                prices: [{ id: 'p-1', price: 100, duration_label: '1 Año' }]
+            }
+        ];
+
+        const { result } = renderHook(() => useCart({
+            ...initialProps,
+            planProducts: mockPlanProducts
+        }));
+
+        act(() => {
+            result.current.openPlanModal();
+        });
+        act(() => {
+            result.current.setPlanForm({ productId: 'plan-1', priceId: 'p-1', months: 1, quantity: 3, discount: 10 });
+        });
+        act(() => {
+            result.current.confirmAddPlan();
+        });
+
+        const item = result.current.cartItems.find(i => i.type === 'PLAN');
+        expect(item).toBeDefined();
+        expect(item.quantity).toBe(3);
+        expect(item.unitPrice).toBe(90); // 100 * 0.90
+        expect(item.total).toBe(270); // 90 * 3
+        expect(result.current.subtotal).toBe(270);
+    });
 });

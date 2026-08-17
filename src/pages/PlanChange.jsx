@@ -65,10 +65,17 @@ export default function PlanChange() {
 
         sortedPlans.forEach(p => {
             const feat = { ...(p.features || {}) };
-            if (feat['API REST'] === undefined && p.name) {
+            if (p.name) {
                 const nameUpper = p.name.toUpperCase();
                 if (nameUpper.includes('ILIMITADO') || nameUpper.includes('EXPRESS') || nameUpper.includes('ESPECIAL') || nameUpper.includes('BÁSICO II')) {
-                    feat['API REST'] = true;
+                    if (feat['API REST'] === undefined) feat['API REST'] = true;
+                }
+                if (nameUpper.includes('ILIMITADO')) {
+                    if (feat['ATS'] === undefined && feat['Generación ATS'] === undefined) {
+                        feat['ATS'] = true;
+                    }
+                    if (feat['ATS'] === false) feat['ATS'] = true;
+                    if (feat['Generación ATS'] === false) feat['Generación ATS'] = true;
                 }
             }
             plansMap[p.name] = {

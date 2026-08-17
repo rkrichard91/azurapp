@@ -25,7 +25,8 @@ export default function PlanSection({
     const baseUnitPrice = currentPriceObjInModal ? parseFloat(currentPriceObjInModal.price) : 0;
     const discountMultiplier = 1 - ((planForm.discount || 0) / 100);
     const discountedUnitPrice = baseUnitPrice * discountMultiplier;
-    const modalQuantity = isTransitionInModal ? (planForm.months || 1) : 1;
+    const planQtyInModal = Math.max(1, parseInt(planForm.quantity) || 1);
+    const modalQuantity = isTransitionInModal ? (planForm.months || 1) * planQtyInModal : planQtyInModal;
     const modalSubtotal = discountedUnitPrice * modalQuantity;
 
     return (
@@ -46,7 +47,8 @@ export default function PlanSection({
                         const p = planProducts.find(prod => prod.id === planItem.productId);
                         const priceObj = p?.prices?.find(pr => pr.id === planItem.priceId) || p?.prices?.[0];
                         const isTransition = p?.name.toUpperCase().includes("TRANSICI");
-                        const qty = isTransition ? (planItem.months || 1) : 1;
+                        const planQty = Math.max(1, parseInt(planItem.quantity) || 1);
+                        const qty = isTransition ? ((planItem.months || 1) * planQty) : planQty;
                         const basePrice = priceObj ? parseFloat(priceObj.price) : 0;
                         const disc = planItem.discount || 0;
                         const totalCalculated = basePrice * (1 - disc / 100) * qty;
@@ -56,7 +58,7 @@ export default function PlanSection({
                                 <div>
                                     <div className="font-semibold text-slate-700">{p?.name || 'Plan de Facturación'}</div>
                                     <div className="text-xs text-slate-500 flex items-center gap-2 mt-0.5">
-                                        <span>{isTransition ? `${qty} Mes(es)` : priceObj?.duration_label}</span>
+                                        <span>{isTransition ? `${planItem.months || 1} Mes(es)` : priceObj?.duration_label}</span>
                                         {disc > 0 && (
                                             <span className="bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded text-[10px] font-bold">
                                                 -{disc}% Desc.
@@ -69,7 +71,7 @@ export default function PlanSection({
                                         <div className="font-bold text-slate-800">
                                             {formatCurrency(totalCalculated)}
                                         </div>
-                                        {isTransition && <div className="text-xs text-slate-400">{qty} x {formatCurrency(basePrice * (1 - disc / 100))}/mes</div>}
+                                        <div className="text-xs text-slate-400">Qty: {planQty}</div>
                                     </div>
                                     <button
                                         onClick={() => {
@@ -101,31 +103,44 @@ export default function PlanSection({
                         <h3 className="text-lg font-bold mb-6 text-center text-slate-800">Añadir Plan de Facturación</h3>
 
                         <div className="space-y-5">
-                            {/* Selector de Plan */}
-                            <div>
-                                <label className="block text-xs font-bold text-slate-600 uppercase mb-1">Plan</label>
-                                <select
-                                    className="w-full p-3 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-medium text-slate-700"
-                                    value={planForm.productId}
-                                    onChange={(e) => {
-                                        const pid = e.target.value;
-                                        const prod = planProducts.find(p => p.id === pid);
-                                        const firstPrice = prod?.prices?.[0];
-                                        setPlanForm(prev => ({
-                                            ...prev,
-                                            productId: pid,
-                                            priceId: firstPrice?.id || "",
-                                            months: 1
-                                        }));
-                                    }}
-                                >
-                                    <option value="">Seleccione un plan...</option>
-                                    {planProducts.map(p => (
-                                        <option key={p.id} value={p.id}>
-                                            {p.name} - {p.prices && p.prices[0] ? formatCurrency(p.prices[0].price) : '$?'}
-                                        </option>
-                                    ))}
-                                </select>
+                            {/* Selector de Plan y Cantidad */}
+                            <div className="flex gap-4">
+                                <div className="flex-1">
+                                    <label className="block text-xs font-bold text-slate-600 uppercase mb-1">Plan</label>
+                                    <select
+                                        className="w-full p-3 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-medium text-slate-700"
+                                        value={planForm.productId}
+                                        onChange={(e) => {
+                                            const pid = e.target.value;
+                                            const prod = planProducts.find(p => p.id === pid);
+                                            const firstPrice = prod?.prices?.[0];
+                                            setPlanForm(prev => ({
+                                                ...prev,
+                                                productId: pid,
+                                                priceId: firstPrice?.id || "",
+                                                months: 1,
+                                                quantity: 1
+                                            }));
+                                        }}
+                                    >
+                                        <option value="">Seleccione un plan...</option>
+                                        {planProducts.map(p => (
+                                            <option key={p.id} value={p.id}>
+                                                {p.name} - {p.prices && p.prices[0] ? formatCurrency(p.prices[0].price) : '$?'}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="w-24">
+                                    <label className="block text-xs font-bold text-slate-600 uppercase mb-1">Cantidad</label>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        value={planForm.quantity || 1}
+                                        onChange={(e) => setPlanForm(prev => ({ ...prev, quantity: Math.max(1, parseInt(e.target.value) || 1) }))}
+                                        className="w-full p-3 bg-slate-50 border border-slate-300 rounded-lg text-center font-bold text-slate-700"
+                                    />
+                                </div>
                             </div>
 
                             {/* Vigencia o Meses (Transición) */}
