@@ -343,7 +343,7 @@ BEGIN
     INSERT INTO prices (product_id, channel_id, price, duration_label) VALUES (prod_id, chan_azur_id, 0.50, '1 MES'), (prod_id, chan_azur_id, 6.00, '1 AÑO'), (prod_id, chan_local_id, 0.50, '1 MES'), (prod_id, chan_local_id, 6.00, '1 AÑO');
 
     INSERT INTO products (name, description, category_id) VALUES ('Establecimiento Adicional (Plan Contable)', 'Sucursal extra para Planes Contables', cat_mod_id) RETURNING id INTO prod_id;
-    INSERT INTO prices (product_id, channel_id, price, duration_label) VALUES (prod_id, chan_azur_id, 20.00, '1 MES'), (prod_id, chan_azur_id, 240.00, '1 AÑO'), (prod_id, chan_local_id, 20.00, '1 MES'), (prod_id, chan_local_id, 240.00, '1 AÑO');
+    INSERT INTO prices (product_id, channel_id, price, duration_label) VALUES (prod_id, chan_azur_id, 10.00, '1 MES'), (prod_id, chan_azur_id, 120.00, '1 AÑO'), (prod_id, chan_local_id, 10.00, '1 MES'), (prod_id, chan_local_id, 120.00, '1 AÑO');
 
     INSERT INTO products (name, description, category_id) VALUES ('Punto de venta', 'Módulo POS Factu', cat_mod_id) RETURNING id INTO prod_id;
     INSERT INTO prices (product_id, channel_id, price, duration_label) VALUES (prod_id, chan_azur_id, 40.00, '1 AÑO'), (prod_id, chan_local_id, 40.00, '1 AÑO');

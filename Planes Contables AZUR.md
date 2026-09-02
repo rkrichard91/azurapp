@@ -34,4 +34,4 @@ Independientemente del plan contable elegido, todos incluyen exactamente las mis
 Si un plan se queda corto en recursos pero no deseas subir al siguiente nivel, puedes comprar aumentos específicos de forma mensual:
 
 * **Usuario adicional:** $2.50 \+ IVA / mes.  
-* **Establecimiento adicional:** $20.00 \+ IVA / mes.
+* **Establecimiento adicional:** $10.00 \+ IVA / mes.

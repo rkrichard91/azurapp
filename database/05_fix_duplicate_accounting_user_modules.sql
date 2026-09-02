@@ -70,7 +70,7 @@ BEGIN
         END IF;
     END IF;
 
-    -- 5. Insertar u ordenar 'Establecimiento Adicional (Plan Contable)' ($20.00/mes o $240.00/año completo sin descuento)
+    -- 5. Insertar u ordenar 'Establecimiento Adicional (Plan Contable)' ($10.00/mes o $120.00/año completo sin descuento)
     IF NOT EXISTS (SELECT 1 FROM public.products WHERE name = 'Establecimiento Adicional (Plan Contable)') THEN
         INSERT INTO public.products (name, description, category_id)
         VALUES ('Establecimiento Adicional (Plan Contable)', 'Sucursal extra para Planes Contables', cat_mod_id)
@@ -78,20 +78,24 @@ BEGIN
 
         IF chan_azur_id IS NOT NULL THEN
             INSERT INTO public.prices (product_id, channel_id, price, duration_label) VALUES
-            (prod_id, chan_azur_id, 20.00, '1 MES'),
-            (prod_id, chan_azur_id, 240.00, '1 AÑO');
+            (prod_id, chan_azur_id, 10.00, '1 MES'),
+            (prod_id, chan_azur_id, 120.00, '1 AÑO');
         END IF;
 
         IF chan_local_id IS NOT NULL THEN
             INSERT INTO public.prices (product_id, channel_id, price, duration_label) VALUES
-            (prod_id, chan_local_id, 20.00, '1 MES'),
-            (prod_id, chan_local_id, 240.00, '1 AÑO');
+            (prod_id, chan_local_id, 10.00, '1 MES'),
+            (prod_id, chan_local_id, 120.00, '1 AÑO');
         END IF;
     ELSE
         SELECT id INTO prod_id FROM public.products WHERE name = 'Establecimiento Adicional (Plan Contable)';
         IF prod_id IS NOT NULL THEN
             UPDATE public.prices 
-            SET price = 240.00 
+            SET price = 10.00 
+            WHERE product_id = prod_id AND duration_label = '1 MES';
+
+            UPDATE public.prices 
+            SET price = 120.00 
             WHERE product_id = prod_id AND duration_label = '1 AÑO';
         END IF;
     END IF;
