@@ -62,6 +62,9 @@ export function useProducts(canalSeleccionado) {
             'Compras sin ATS': 12,
             'Módulo Documentos Recibidos': 13,
             'Factura Recurrente': 14,
+            'Módulo de Cobranzas': 15,
+            'Módulo de Gestión Comercial': 16,
+            'Módulo Médico': 17,
         };
 
         return raw.sort((a, b) => {

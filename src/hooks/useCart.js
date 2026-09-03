@@ -1,5 +1,7 @@
 import { useState, useMemo } from 'react';
-import { IVA_RATE, EMISSION_POINT_TIERS } from '../constants';
+import { IVA_RATE, EMISSION_POINT_TIERS, calculateMedicalModuleCost, getMedicalDoctorUnitPrice } from '../constants';
+
+
 
 /**
  * Hook para manejar el carrito de cotización (selecciones, totales, handlers).
@@ -140,28 +142,51 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
         selectedModules.forEach(mod => {
             const product = moduleProducts.find(p => p.id === mod.productId);
             if (product) {
+                const isMedical = product.name?.toLowerCase().includes('médico') || product.name?.toLowerCase().includes('medico');
                 const priceObj = product.prices.find(pr => pr.id === mod.priceId) || product.prices?.[0];
-                let unitPrice = priceObj ? parseFloat(priceObj.price) : 0;
-                if (mod.discount > 0) {
-                    unitPrice = unitPrice * (1 - (mod.discount / 100));
-                }
-                const isMonthly = priceObj?.duration_label?.toUpperCase().includes('MES');
                 const quantity = Math.max(1, parseInt(mod.quantity) || 1);
+                const isMonthly = priceObj?.duration_label?.toUpperCase().includes('MES');
                 const months = isMonthly ? Math.max(1, parseInt(mod.months) || 1) : 1;
-                const total = unitPrice * quantity * months;
+                const discount = Math.min(5, Math.max(0, parseInt(mod.discount) || 0));
+
+                let total = 0;
+                let unitPrice = 0;
+                let detailsText = '';
+
+                if (isMedical) {
+                    const unitDoctorPrice = getMedicalDoctorUnitPrice(quantity);
+                    const rawTotal = calculateMedicalModuleCost(quantity) * months;
+                    total = discount > 0 ? rawTotal * (1 - (discount / 100)) : rawTotal;
+                    unitPrice = discount > 0 ? unitDoctorPrice * (1 - (discount / 100)) : unitDoctorPrice;
+
+                    if (quantity === 1) {
+                        detailsText = '1 doctor a $150.00 c/u';
+                    } else {
+                        detailsText = `${quantity} doctores a $${unitDoctorPrice.toFixed(2)} c/u`;
+                    }
+                    if (months > 1) {
+                        detailsText += ` x ${months} meses`;
+                    }
+                } else {
+                    let baseUnit = priceObj ? parseFloat(priceObj.price) : 0;
+                    if (discount > 0) {
+                        baseUnit = baseUnit * (1 - (discount / 100));
+                    }
+                    unitPrice = baseUnit;
+                    total = unitPrice * quantity * months;
+
+                    if (quantity > 1 && months > 1) {
+                        detailsText = `${quantity} unidades x ${months} meses`;
+                    } else if (quantity > 1) {
+                        detailsText = `${quantity} unidades`;
+                    } else if (months > 1) {
+                        detailsText = `${months} meses`;
+                    }
+                }
 
                 let durationText = priceObj ? priceObj.duration_label : '';
                 if (isMonthly) {
                     durationText = `${months} ${months === 1 ? 'MES' : 'MESES'}`;
-                }
-
-                let detailsText = '';
-                if (quantity > 1 && months > 1) {
-                    detailsText = `${quantity} unidades x ${months} meses`;
-                } else if (quantity > 1) {
-                    detailsText = `${quantity} unidades`;
-                } else if (months > 1) {
-                    detailsText = `${months} meses`;
                 }
 
                 items.push({

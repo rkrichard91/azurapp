@@ -22,6 +22,28 @@ export const EMISSION_POINT_TIERS = [
     { minQty: 1, price: 2.25 },
 ];
 
+// Obtener precio unitario por doctor según el rango:
+// 1 doctor: $150.00 c/u
+// 2 a 5 doctores: $80.00 c/u
+// 6 a 15 doctores: $51.00 c/u
+// 16 en adelante: $40.00 c/u
+export function getMedicalDoctorUnitPrice(numDoctors = 1) {
+    const qty = Math.max(1, parseInt(numDoctors) || 1);
+    if (qty >= 16) return 40;
+    if (qty >= 6) return 51;
+    if (qty >= 2) return 80;
+    return 150;
+}
+
+// Cálculo del total Módulo Médico (cantidad * precio unitario del rango)
+export function calculateMedicalModuleCost(numDoctors = 1) {
+    const qty = Math.max(1, parseInt(numDoctors) || 1);
+    const unitPrice = getMedicalDoctorUnitPrice(qty);
+    return qty * unitPrice;
+}
+
+
+
 // Orden de features para comparativa de planes (basado en la matriz oficial de características)
 export const FEATURE_ORDER = [
     "Comprobantes año",

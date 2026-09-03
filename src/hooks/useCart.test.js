@@ -314,4 +314,83 @@ describe('useCart Hook', () => {
         expect(item.total).toBe(270); // 90 * 3
         expect(result.current.subtotal).toBe(270);
     });
+
+    it('should calculate Medical Module correctly for 1 doctor, 3 doctors, 10 doctors and 20 doctors', () => {
+        const mockModuleProducts = [
+            {
+                id: 'mod-medico',
+                name: 'Módulo Médico',
+                prices: [{ id: 'p-med', price: 150, duration_label: '1 AÑO' }]
+            },
+            {
+                id: 'mod-cobranzas',
+                name: 'Módulo de Cobranzas',
+                prices: [{ id: 'p-cob', price: 80, duration_label: '1 AÑO' }]
+            },
+            {
+                id: 'mod-comercial',
+                name: 'Módulo de Gestión Comercial',
+                prices: [{ id: 'p-com', price: 100, duration_label: '1 AÑO' }]
+            }
+        ];
+
+        const { result } = renderHook(() => useCart({
+            ...initialProps,
+            moduleProducts: mockModuleProducts
+        }));
+
+        // 1. Caso 1 doctor: $150 c/u -> $150
+        act(() => {
+            result.current.setSelectedModules([
+                { productId: 'mod-medico', priceId: 'p-med', quantity: 1, months: 1, discount: 0 }
+            ]);
+        });
+        let medItem = result.current.cartItems.find(i => i.name === 'Módulo Médico');
+        expect(medItem.total).toBe(150);
+        expect(medItem.details).toContain('1 doctor a $150.00 c/u');
+
+        // 2. Caso 3 doctores (rango 2 a 5): $80 c/u -> 3 * 80 = 240
+        act(() => {
+            result.current.setSelectedModules([
+                { productId: 'mod-medico', priceId: 'p-med', quantity: 3, months: 1, discount: 0 }
+            ]);
+        });
+        medItem = result.current.cartItems.find(i => i.name === 'Módulo Médico');
+        expect(medItem.total).toBe(240);
+        expect(medItem.details).toContain('3 doctores a $80.00 c/u');
+
+        // 3. Caso 10 doctores (rango 6 a 15): $51 c/u -> 10 * 51 = 510
+        act(() => {
+            result.current.setSelectedModules([
+                { productId: 'mod-medico', priceId: 'p-med', quantity: 10, months: 1, discount: 0 }
+            ]);
+        });
+        medItem = result.current.cartItems.find(i => i.name === 'Módulo Médico');
+        expect(medItem.total).toBe(510);
+        expect(medItem.details).toContain('10 doctores a $51.00 c/u');
+
+        // 4. Caso 20 doctores (rango 16 en adelante): $40 c/u -> 20 * 40 = 800
+        act(() => {
+            result.current.setSelectedModules([
+                { productId: 'mod-medico', priceId: 'p-med', quantity: 20, months: 1, discount: 0 }
+            ]);
+        });
+        medItem = result.current.cartItems.find(i => i.name === 'Módulo Médico');
+        expect(medItem.total).toBe(800);
+        expect(medItem.details).toContain('20 doctores a $40.00 c/u');
+
+        // 5. Cobranzas ($80) y Gestión Comercial ($100)
+        act(() => {
+            result.current.setSelectedModules([
+                { productId: 'mod-cobranzas', priceId: 'p-cob', quantity: 1, months: 1, discount: 0 },
+                { productId: 'mod-comercial', priceId: 'p-com', quantity: 1, months: 1, discount: 0 }
+            ]);
+        });
+        const cobItem = result.current.cartItems.find(i => i.name === 'Módulo de Cobranzas');
+        const comItem = result.current.cartItems.find(i => i.name === 'Módulo de Gestión Comercial');
+        expect(cobItem.total).toBe(80);
+        expect(comItem.total).toBe(100);
+        expect(result.current.subtotal).toBe(180);
+    });
 });
+

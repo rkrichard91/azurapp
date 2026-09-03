@@ -1,6 +1,9 @@
 import React from 'react';
 import { Trash2 } from 'lucide-react';
 import { formatCurrency } from '../../utils/format';
+import { calculateMedicalModuleCost, getMedicalDoctorUnitPrice } from '../../constants';
+
+
 
 /**
  * Sección de Módulos y Puntos de Emisión: lista + modal + selección de cantidad/meses/descuento.
@@ -33,22 +36,34 @@ export default function ModuleSection({
                         selectedModules.map((mod, idx) => {
                             const p = moduleProducts.find(prod => prod.id === mod.productId);
                             const priceObj = p?.prices.find(pr => pr.id === mod.priceId) || p?.prices?.[0];
-                            const isMonthly = priceObj?.duration_label?.toUpperCase().includes('MES');
-                            const showQuantity = p && (p.name.includes("Usuario") || p.name.includes("Empleado") || p.name.includes("Empresa") || p.name.includes("Establecimiento"));
+                            const isMedical = p && (p.name.toLowerCase().includes("médico") || p.name.toLowerCase().includes("medico"));
+                            const showQuantity = p && (p.name.includes("Usuario") || p.name.includes("Empleado") || p.name.includes("Empresa") || p.name.includes("Establecimiento") || isMedical);
 
                             const basePrice = priceObj ? parseFloat(priceObj.price) : 0;
                             const qty = Math.max(1, parseInt(mod.quantity) || 1);
                             const months = isMonthly ? Math.max(1, parseInt(mod.months) || 1) : 1;
                             const discount = Math.min(5, Math.max(0, parseInt(mod.discount) || 0));
 
-                            const totalCalculated = basePrice * qty * months * (1 - (discount / 100));
+                            let totalCalculated = 0;
+                            if (isMedical) {
+                                const raw = calculateMedicalModuleCost(qty) * months;
+                                totalCalculated = discount > 0 ? raw * (1 - (discount / 100)) : raw;
+                            } else {
+                                totalCalculated = basePrice * qty * months * (1 - (discount / 100));
+                            }
 
                             return (
                                 <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
                                     <div className="flex-1">
                                         <div className="font-bold text-slate-800 text-sm">{p?.name}</div>
-                                        <div className="text-xs text-slate-500 font-medium flex items-center gap-2 mt-0.5">
-                                            <span>{formatCurrency(basePrice)} / {priceObj?.duration_label || 'PAGO ÚNICO'}</span>
+                                        <div className="text-xs text-slate-500 font-medium flex items-center gap-2 mt-0.5 flex-wrap">
+                                            {isMedical ? (
+                                                <span className="text-blue-600 font-semibold">
+                                                    {formatCurrency(getMedicalDoctorUnitPrice(qty))} c/u ({qty} {qty === 1 ? 'doctor' : 'doctores'}) / 1 AÑO
+                                                </span>
+                                            ) : (
+                                                <span>{formatCurrency(basePrice)} / {priceObj?.duration_label || 'PAGO ÚNICO'}</span>
+                                            )}
                                             {isMonthly && (
                                                 <span className="bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded text-[10px] font-bold">MENSUAL</span>
                                             )}
@@ -74,10 +89,10 @@ export default function ModuleSection({
                                             </select>
                                         )}
 
-                                        {/* Input Cantidad (Usuarios/Empleados/Empresas/Establecimientos) */}
+                                        {/* Input Cantidad (Usuarios/Empleados/Empresas/Establecimientos/Doctores) */}
                                         {showQuantity && (
-                                            <div className="flex items-center gap-1 bg-white px-2 py-1 border border-slate-200 rounded-lg text-xs" title="Cantidad de usuarios/empleados/unidades">
-                                                <span className="text-slate-400 font-semibold">Cant:</span>
+                                            <div className="flex items-center gap-1 bg-white px-2 py-1 border border-slate-200 rounded-lg text-xs" title={isMedical ? "Cantidad de doctores" : "Cantidad de usuarios/empleados/unidades"}>
+                                                <span className="text-slate-400 font-semibold">{isMedical ? 'Doctores:' : 'Cant:'}</span>
                                                 <input
                                                     type="number"
                                                     min="1"
@@ -184,7 +199,8 @@ export default function ModuleSection({
                                 const selectedPriceId = selectedItem?.priceId || p.prices?.[0]?.id;
                                 const priceObj = p.prices?.find(pr => pr.id === selectedPriceId) || p.prices?.[0];
                                 const isMonthly = priceObj?.duration_label?.toUpperCase().includes('MES');
-                                const showQuantity = p.name.includes("Usuario") || p.name.includes("Empleado") || p.name.includes("Empresa") || p.name.includes("Establecimiento");
+                                const isMedical = p.name?.toLowerCase().includes("médico") || p.name?.toLowerCase().includes("medico");
+                                const showQuantity = p.name.includes("Usuario") || p.name.includes("Empleado") || p.name.includes("Empresa") || p.name.includes("Establecimiento") || isMedical;
                                 const quantity = selectedItem?.quantity || 1;
                                 const months = selectedItem?.months || 1;
 
@@ -248,15 +264,23 @@ export default function ModuleSection({
                                                     </div>
                                                 ) : (
                                                     <div className="font-bold text-blue-700 bg-blue-100/80 px-2 py-0.5 rounded">
-                                                        {formatCurrency(priceObj?.price || 0)} / {priceObj?.duration_label}
+                                                        {isMedical ? (
+                                                            <span>
+                                                                {quantity === 1 
+                                                                    ? `${formatCurrency(150)} / 1 AÑO` 
+                                                                    : `${formatCurrency(getMedicalDoctorUnitPrice(quantity))} c/u (${formatCurrency(calculateMedicalModuleCost(quantity))} total)`}
+                                                            </span>
+                                                        ) : (
+                                                            `${formatCurrency(priceObj?.price || 0)} / ${priceObj?.duration_label}`
+                                                        )}
                                                     </div>
                                                 )}
 
                                                 <div className="flex items-center gap-2">
                                                     {/* Input Cantidad */}
                                                     {showQuantity && (
-                                                        <div className="flex items-center gap-1" title="Cantidad de usuarios/empleados">
-                                                            <span className="font-semibold text-slate-600">Cant:</span>
+                                                        <div className="flex items-center gap-1" title={isMedical ? "Cantidad de doctores" : "Cantidad de usuarios/empleados"}>
+                                                            <span className="font-semibold text-slate-600">{isMedical ? 'Doctores:' : 'Cant:'}</span>
                                                             <input
                                                                 type="number"
                                                                 min="1"
