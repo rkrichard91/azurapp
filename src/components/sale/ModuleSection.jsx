@@ -40,6 +40,7 @@ export default function ModuleSection({
                             const showQuantity = p && (p.name.includes("Usuario") || p.name.includes("Empleado") || p.name.includes("Empresa") || p.name.includes("Establecimiento") || isMedical);
 
                             const basePrice = priceObj ? parseFloat(priceObj.price) : 0;
+                            const isMonthly = priceObj?.duration_label?.toUpperCase().includes('MES');
                             const qty = Math.max(1, parseInt(mod.quantity) || 1);
                             const months = isMonthly ? Math.max(1, parseInt(mod.months) || 1) : 1;
                             const discount = Math.min(5, Math.max(0, parseInt(mod.discount) || 0));
