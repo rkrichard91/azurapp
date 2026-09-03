@@ -1,0 +1,119 @@
+-- ==============================================================================
+-- MIGRACIÓN 08: Incorporación de Periodos Trimestral (3 MESES) y Semestral (6 MESES)
+-- Para Planes Contables AZUR (Precios según matriz oficial sin IVA)
+-- ==============================================================================
+
+DO $$
+DECLARE
+    chan_azur_id INT;
+    chan_local_id INT;
+    prod_id UUID;
+BEGIN
+    SELECT id INTO chan_azur_id FROM public.channels WHERE code = 'AZUR';
+    SELECT id INTO chan_local_id FROM public.channels WHERE code = 'LOCAL';
+
+    --------------------------------------------------------------------------------
+    -- 1. PLAN CONTABLE ESENCIAL (3 meses: $74.25 | 6 meses: $141.00)
+    --------------------------------------------------------------------------------
+    SELECT id INTO prod_id FROM public.products WHERE name = 'PLAN CONTABLE ESENCIAL';
+    IF prod_id IS NOT NULL THEN
+        -- AZUR
+        IF chan_azur_id IS NOT NULL THEN
+            INSERT INTO public.prices (product_id, channel_id, price, duration_label)
+            VALUES 
+                (prod_id, chan_azur_id, 74.25, '3 MESES'),
+                (prod_id, chan_azur_id, 141.00, '6 MESES')
+            ON CONFLICT (product_id, channel_id, duration_label)
+            DO UPDATE SET price = EXCLUDED.price;
+        END IF;
+
+        -- LOCAL
+        IF chan_local_id IS NOT NULL THEN
+            INSERT INTO public.prices (product_id, channel_id, price, duration_label)
+            VALUES 
+                (prod_id, chan_local_id, 74.25, '3 MESES'),
+                (prod_id, chan_local_id, 141.00, '6 MESES')
+            ON CONFLICT (product_id, channel_id, duration_label)
+            DO UPDATE SET price = EXCLUDED.price;
+        END IF;
+    END IF;
+
+    --------------------------------------------------------------------------------
+    -- 2. PLAN CONTABLE PROFESIONAL (3 meses: $101.85 | 6 meses: $197.40)
+    --------------------------------------------------------------------------------
+    SELECT id INTO prod_id FROM public.products WHERE name = 'PLAN CONTABLE PROFESIONAL';
+    IF prod_id IS NOT NULL THEN
+        -- AZUR
+        IF chan_azur_id IS NOT NULL THEN
+            INSERT INTO public.prices (product_id, channel_id, price, duration_label)
+            VALUES 
+                (prod_id, chan_azur_id, 101.85, '3 MESES'),
+                (prod_id, chan_azur_id, 197.40, '6 MESES')
+            ON CONFLICT (product_id, channel_id, duration_label)
+            DO UPDATE SET price = EXCLUDED.price;
+        END IF;
+
+        -- LOCAL
+        IF chan_local_id IS NOT NULL THEN
+            INSERT INTO public.prices (product_id, channel_id, price, duration_label)
+            VALUES 
+                (prod_id, chan_local_id, 101.85, '3 MESES'),
+                (prod_id, chan_local_id, 197.40, '6 MESES')
+            ON CONFLICT (product_id, channel_id, duration_label)
+            DO UPDATE SET price = EXCLUDED.price;
+        END IF;
+    END IF;
+
+    --------------------------------------------------------------------------------
+    -- 3. PLAN CONTABLE PREMIUM (3 meses: $130.95 | 6 meses: $253.80)
+    --------------------------------------------------------------------------------
+    SELECT id INTO prod_id FROM public.products WHERE name = 'PLAN CONTABLE PREMIUM';
+    IF prod_id IS NOT NULL THEN
+        -- AZUR
+        IF chan_azur_id IS NOT NULL THEN
+            INSERT INTO public.prices (product_id, channel_id, price, duration_label)
+            VALUES 
+                (prod_id, chan_azur_id, 130.95, '3 MESES'),
+                (prod_id, chan_azur_id, 253.80, '6 MESES')
+            ON CONFLICT (product_id, channel_id, duration_label)
+            DO UPDATE SET price = EXCLUDED.price;
+        END IF;
+
+        -- LOCAL
+        IF chan_local_id IS NOT NULL THEN
+            INSERT INTO public.prices (product_id, channel_id, price, duration_label)
+            VALUES 
+                (prod_id, chan_local_id, 130.95, '3 MESES'),
+                (prod_id, chan_local_id, 253.80, '6 MESES')
+            ON CONFLICT (product_id, channel_id, duration_label)
+            DO UPDATE SET price = EXCLUDED.price;
+        END IF;
+    END IF;
+
+    --------------------------------------------------------------------------------
+    -- 4. PLAN CONTABLE CORPORATIVO (3 meses: $174.60 | 6 meses: $338.40)
+    --------------------------------------------------------------------------------
+    SELECT id INTO prod_id FROM public.products WHERE name = 'PLAN CONTABLE CORPORATIVO';
+    IF prod_id IS NOT NULL THEN
+        -- AZUR
+        IF chan_azur_id IS NOT NULL THEN
+            INSERT INTO public.prices (product_id, channel_id, price, duration_label)
+            VALUES 
+                (prod_id, chan_azur_id, 174.60, '3 MESES'),
+                (prod_id, chan_azur_id, 338.40, '6 MESES')
+            ON CONFLICT (product_id, channel_id, duration_label)
+            DO UPDATE SET price = EXCLUDED.price;
+        END IF;
+
+        -- LOCAL
+        IF chan_local_id IS NOT NULL THEN
+            INSERT INTO public.prices (product_id, channel_id, price, duration_label)
+            VALUES 
+                (prod_id, chan_local_id, 174.60, '3 MESES'),
+                (prod_id, chan_local_id, 338.40, '6 MESES')
+            ON CONFLICT (product_id, channel_id, duration_label)
+            DO UPDATE SET price = EXCLUDED.price;
+        END IF;
+    END IF;
+
+END $$;

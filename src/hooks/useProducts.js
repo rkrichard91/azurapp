@@ -21,8 +21,26 @@ export function useProducts(canalSeleccionado) {
 
     // Productos categorizados
     const planProducts = useMemo(() => {
+        const durationOrder = {
+            '1 MES': 1,
+            '3 MESES': 2,
+            '6 MESES': 3,
+            '1 AÑO': 4,
+            '2 AÑOS': 5
+        };
+
         return products
             .filter(p => p.category?.code === 'PLAN')
+            .map(p => ({
+                ...p,
+                prices: Array.isArray(p.prices) 
+                    ? [...p.prices].sort((a, b) => {
+                        const ordA = durationOrder[a.duration_label] || 99;
+                        const ordB = durationOrder[b.duration_label] || 99;
+                        return ordA - ordB;
+                    })
+                    : p.prices
+            }))
             .sort((a, b) => {
                 const isContableA = a.name.toUpperCase().includes('CONTABLE');
                 const isContableB = b.name.toUpperCase().includes('CONTABLE');
@@ -33,10 +51,10 @@ export function useProducts(canalSeleccionado) {
                 }
 
                 // Obtener precio base para ordenamiento (preferir precio a 1 AÑO o el primer precio disponible)
-                const getBasePrice = (p) => {
-                    const price1Yr = p.prices?.find(pr => pr.duration_label === '1 AÑO')?.price;
+                const getBasePrice = (prod) => {
+                    const price1Yr = prod.prices?.find(pr => pr.duration_label === '1 AÑO')?.price;
                     if (price1Yr !== undefined) return price1Yr;
-                    return p.prices && p.prices.length > 0 ? p.prices[0].price : 0;
+                    return prod.prices && prod.prices.length > 0 ? prod.prices[0].price : 0;
                 };
 
                 return getBasePrice(a) - getBasePrice(b);
