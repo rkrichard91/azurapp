@@ -71,11 +71,8 @@ export default function PlanChange() {
                     if (feat['API REST'] === undefined) feat['API REST'] = true;
                 }
                 if (nameUpper.includes('ILIMITADO')) {
-                    if (feat['ATS'] === undefined && feat['Generación ATS'] === undefined) {
-                        feat['ATS'] = true;
-                    }
-                    if (feat['ATS'] === false) feat['ATS'] = true;
-                    if (feat['Generación ATS'] === false) feat['Generación ATS'] = true;
+                    feat['ATS'] = false;
+                    feat['Generación ATS'] = false;
                 }
             }
             plansMap[p.name] = {

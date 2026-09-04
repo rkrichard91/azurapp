@@ -219,7 +219,7 @@ BEGIN
 
     -- ILIMITADO
     INSERT INTO products (name, description, category_id, features) VALUES 
-    ('PLAN ILIMITADO', 'Sin límites', cat_plan_id, '{"Comprobantes año": "Ilimitado", "Usuarios": 5, "Puntos de Emisión": 10, "Empresas": 1, "Establecimientos": 3, "Inventario": true, "Proformas": true, "Soporte Técnico": true, "Portal Clientes": true, "SMTP Propio": true, "Compras": true, "Retenciones": true, "Guías de Remisión": true, "Liquidación Compras": true, "Cuentas por Cobrar": true, "Cuentas por Pagar": true, "Notas de Débito": true, "Generación ATS": true, "Reportes": true, "API REST": true}') RETURNING id INTO prod_id;
+    ('PLAN ILIMITADO', 'Sin límites', cat_plan_id, '{"Comprobantes año": "Ilimitado", "Usuarios": 5, "Puntos de Emisión": 10, "Empresas": 1, "Establecimientos": 3, "Inventario": true, "Proformas": true, "Soporte Técnico": true, "Portal Clientes": true, "SMTP Propio": true, "Compras": true, "Retenciones": true, "Guías de Remisión": true, "Liquidación Compras": true, "Cuentas por Cobrar": true, "Cuentas por Pagar": true, "Notas de Débito": true, "Generación ATS": false, "Reportes": true, "API REST": true}') RETURNING id INTO prod_id;
     
     INSERT INTO prices (product_id, channel_id, price, duration_label) VALUES 
     (prod_id, chan_azur_id, 150.00, '1 AÑO'), (prod_id, chan_local_id, 150.00, '1 AÑO'),
@@ -230,7 +230,7 @@ BEGIN
 
     -- ILIMITADO PLUS
     INSERT INTO products (name, description, category_id, features) VALUES 
-    ('PLAN ILIMITADO PLUS', 'Más capacidad', cat_plan_id, '{"Comprobantes año": "Ilimitado", "Usuarios": 5, "Puntos de Emisión": 10, "Empresas": 2, "Establecimientos": 3, "Inventario": true, "Proformas": true, "Soporte Técnico": true, "Portal Clientes": true, "SMTP Propio": true, "Compras": true, "Retenciones": true, "Guías de Remisión": true, "Liquidación Compras": true, "Cuentas por Cobrar": true, "Cuentas por Pagar": true, "Notas de Débito": true, "Generación ATS": true, "Reportes": true, "API REST": true}') RETURNING id INTO prod_id;
+    ('PLAN ILIMITADO PLUS', 'Más capacidad', cat_plan_id, '{"Comprobantes año": "Ilimitado", "Usuarios": 5, "Puntos de Emisión": 10, "Empresas": 2, "Establecimientos": 3, "Inventario": true, "Proformas": true, "Soporte Técnico": true, "Portal Clientes": true, "SMTP Propio": true, "Compras": true, "Retenciones": true, "Guías de Remisión": true, "Liquidación Compras": true, "Cuentas por Cobrar": true, "Cuentas por Pagar": true, "Notas de Débito": true, "Generación ATS": false, "Reportes": true, "API REST": true}') RETURNING id INTO prod_id;
     INSERT INTO prices (product_id, channel_id, price, duration_label) VALUES 
     (prod_id, chan_azur_id, 200.00, '1 AÑO'), (prod_id, chan_local_id, 200.00, '1 AÑO'),
     (prod_id, chan_azur_id, 380.00, '2 AÑOS'), (prod_id, chan_local_id, 380.00, '2 AÑOS'),
@@ -240,7 +240,7 @@ BEGIN
 
     -- ILIMITADO PRO
     INSERT INTO products (name, description, category_id, features) VALUES 
-    ('PLAN ILIMITADO PRO', 'Máxima potencia', cat_plan_id, '{"Comprobantes año": "Ilimitado", "Usuarios": 5, "Puntos de Emisión": 10, "Empresas": 3, "Establecimientos": 3, "Inventario": true, "Proformas": true, "Soporte Técnico": true, "Portal Clientes": true, "SMTP Propio": true, "Compras": true, "Retenciones": true, "Guías de Remisión": true, "Liquidación Compras": true, "Cuentas por Cobrar": true, "Cuentas por Pagar": true, "Notas de Débito": true, "Generación ATS": true, "Reportes": true, "API REST": true}') RETURNING id INTO prod_id;
+    ('PLAN ILIMITADO PRO', 'Máxima potencia', cat_plan_id, '{"Comprobantes año": "Ilimitado", "Usuarios": 5, "Puntos de Emisión": 10, "Empresas": 3, "Establecimientos": 3, "Inventario": true, "Proformas": true, "Soporte Técnico": true, "Portal Clientes": true, "SMTP Propio": true, "Compras": true, "Retenciones": true, "Guías de Remisión": true, "Liquidación Compras": true, "Cuentas por Cobrar": true, "Cuentas por Pagar": true, "Notas de Débito": true, "Generación ATS": false, "Reportes": true, "API REST": true}') RETURNING id INTO prod_id;
     INSERT INTO prices (product_id, channel_id, price, duration_label) VALUES 
     (prod_id, chan_azur_id, 250.00, '1 AÑO'), (prod_id, chan_local_id, 250.00, '1 AÑO'),
     (prod_id, chan_azur_id, 475.00, '2 AÑOS'), (prod_id, chan_local_id, 475.00, '2 AÑOS'),

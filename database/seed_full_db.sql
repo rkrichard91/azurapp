@@ -79,7 +79,7 @@ BEGIN
 
     -- ILIMITADO
     INSERT INTO products (name, description, category_id, features) VALUES 
-    ('PLAN ILIMITADO', 'Sin límites', cat_plan_id, '{"Comprobantes año": "Ilimitado", "Soporte": true, "Facturas": true, "Retenciones": true, "Notas de crédito": true, "Notas de débito": true, "Guías de remisión": true, "Liquidación compras": true, "Proforma": true, "Usuarios": "5", "Empresas": "1", "Establecimientos": "3", "Puntos de Emisión": "10", "Inventario": true, "Reportes": true, "Compras": true, "Cuentas por cobrar": true, "Cuentas por pagar": true, "SMTP propio": true, "Portal documentación": true, "ATS": true, "API REST": true}') RETURNING id INTO prod_id;
+    ('PLAN ILIMITADO', 'Sin límites', cat_plan_id, '{"Comprobantes año": "Ilimitado", "Soporte": true, "Facturas": true, "Retenciones": true, "Notas de crédito": true, "Notas de débito": true, "Guías de remisión": true, "Liquidación compras": true, "Proforma": true, "Usuarios": "5", "Empresas": "1", "Establecimientos": "3", "Puntos de Emisión": "10", "Inventario": true, "Reportes": true, "Compras": true, "Cuentas por cobrar": true, "Cuentas por pagar": true, "SMTP propio": true, "Portal documentación": true, "ATS": false, "API REST": true}') RETURNING id INTO prod_id;
     INSERT INTO prices (product_id, channel_id, price, duration_label) VALUES (prod_id, chan_azur_id, 150.00, '1 AÑO'), (prod_id, chan_local_id, 150.00, '1 AÑO');
 
     --------------------------------------------------------------------------------
