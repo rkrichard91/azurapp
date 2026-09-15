@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Video, MapPin, Bell, Clock, CheckCircle, MessageSquare, ExternalLink, X } from 'lucide-react';
 import { useRemindersContext } from '../../context/ReminderContext';
@@ -37,9 +38,9 @@ export default function AlarmAlertModal() {
         window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(activeAlarm.location_address)}`, '_blank');
     };
 
-    return (
+    const alertContent = (
         <AnimatePresence>
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+            <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
                 <motion.div
                     initial={{ scale: 0.9, opacity: 0, y: 20 }}
                     animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -179,4 +180,6 @@ export default function AlarmAlertModal() {
             </div>
         </AnimatePresence>
     );
+
+    return typeof document !== 'undefined' ? createPortal(alertContent, document.body) : alertContent;
 }
