@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card } from '../components/ui/Card';
-import { Calculator, ShoppingCart, RefreshCw, Box, TrendingUp } from 'lucide-react';
+import { Calculator, ShoppingCart, RefreshCw, Box, TrendingUp, Calendar } from 'lucide-react';
+import DashboardRemindersWidget from '../components/reminders/DashboardRemindersWidget';
 
 export default function Dashboard() {
     const tools = [
@@ -41,16 +42,26 @@ export default function Dashboard() {
 
     return (
         <>
-            <div className="py-12 text-center mb-12">
-                <h1 className="text-4xl font-bold text-slate-900 mb-4 tracking-tight">
-                    Centro de Cotizaciones <span className="text-blue-600">Azur</span>
+            <div className="pt-6 pb-8 text-center mb-6">
+                <h1 className="text-4xl font-extrabold text-slate-900 mb-3 tracking-tight">
+                    Centro de Operaciones y Cotizaciones <span className="text-blue-600">Azur</span>
                 </h1>
-                <p className="text-lg text-slate-500 max-w-2xl mx-auto">
-                    Seleccione una herramienta para comenzar.
+                <p className="text-base text-slate-500 max-w-2xl mx-auto">
+                    Gestiona tu agenda de clientes, capacitaciones y herramientas comerciales en un solo lugar.
                 </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Reminders & Appointments Section */}
+            <DashboardRemindersWidget />
+
+            <div className="mb-6 flex items-center justify-between">
+                <div>
+                    <h2 className="text-xl font-bold text-slate-900">Herramientas Comerciales</h2>
+                    <p className="text-xs text-slate-500">Cotizadores de ventas, planes y módulos adicionales</p>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {tools.map((tool, idx) => (
                     tool.active ? (
                         <Link key={idx} to={tool.link} className="block group">

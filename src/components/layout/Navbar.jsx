@@ -6,7 +6,8 @@ import { useAuth } from '../../context/AuthContext';
 import EditProfileModal from '../auth/EditProfileModal';
 import ChangePasswordModal from '../auth/ChangePasswordModal';
 
-import { LayoutDashboard, ShoppingCart, Repeat, Package, Menu, X, LogOut, User, Lock, ChevronDown } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Repeat, Package, Menu, X, LogOut, User, Lock, ChevronDown, Bell, Video, MapPin, CheckCircle2 } from 'lucide-react';
+import { useRemindersContext } from '../../context/ReminderContext';
 import logo from '../../assets/logo.png';
 
 const NAV_ITEMS = [
@@ -19,18 +20,24 @@ const NAV_ITEMS = [
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+    const [isNotifOpen, setIsNotifOpen] = useState(false);
     const [showEditProfile, setShowEditProfile] = useState(false);
     const [showChangePassword, setShowChangePassword] = useState(false);
 
     const { user, signOut } = useAuth();
+    const { pendingCount, todayReminders, markCompleted, setActiveAlarm } = useRemindersContext();
     const navigate = useNavigate();
     const menuRef = useRef(null);
+    const notifRef = useRef(null);
 
-    // Close menu when clicking outside
+    // Close menus when clicking outside
     useEffect(() => {
         function handleClickOutside(event) {
             if (menuRef.current && !menuRef.current.contains(event.target)) {
                 setIsProfileMenuOpen(false);
+            }
+            if (notifRef.current && !notifRef.current.contains(event.target)) {
+                setIsNotifOpen(false);
             }
         }
         document.addEventListener("mousedown", handleClickOutside);
@@ -104,57 +111,165 @@ export default function Navbar() {
                         })}
                     </div>
 
-                    {/* User Profile Dropdown */}
-                    <div className="relative" ref={menuRef}>
-                        <button
-                            onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                            className="flex items-center gap-3 pl-1 pr-2 py-1 rounded-full hover:bg-slate-100/50 transition-colors border border-transparent hover:border-slate-200/50"
-                        >
-                            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-xs font-bold text-white shadow-md shadow-blue-500/20">
-                                {getInitials()}
-                            </div>
-                            < ChevronDown size={14} className={`text-slate-400 transition-transform duration-200 ${isProfileMenuOpen ? 'rotate-180' : ''}`} />
-                        </button>
+                    {/* Right action items: Notifications Bell & Profile Dropdown */}
+                    <div className="flex items-center gap-2">
+                        {/* Reminders Bell Button & Dropdown */}
+                        <div className="relative" ref={notifRef}>
+                            <button
+                                onClick={() => setIsNotifOpen(!isNotifOpen)}
+                                className={`relative p-2.5 rounded-xl transition-all ${
+                                    isNotifOpen ? 'bg-blue-50 text-blue-600' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/60'
+                                }`}
+                                title="Agenda y Recordatorios de Hoy"
+                            >
+                                <Bell size={19} />
+                                {pendingCount > 0 && (
+                                    <span className="absolute top-1.5 right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-white animate-pulse">
+                                        {pendingCount}
+                                    </span>
+                                )}
+                            </button>
 
-                        <AnimatePresence>
-                            {isProfileMenuOpen && (
-                                <motion.div
-                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                    transition={{ duration: 0.15 }}
-                                    className="absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden py-2 z-50 origin-top-right"
-                                >
-                                    <div className="px-4 py-3 border-b border-slate-50 mb-2">
-                                        <p className="text-sm font-semibold text-slate-800 truncate">{displayName}</p>
-                                        <p className="text-xs text-slate-400 truncate">{user?.email}</p>
-                                    </div>
-
-                                    <button
-                                        onClick={() => { setShowEditProfile(true); setIsProfileMenuOpen(false); }}
-                                        className="w-full text-left px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors flex items-center gap-3"
+                            <AnimatePresence>
+                                {isNotifOpen && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                        transition={{ duration: 0.15 }}
+                                        className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden py-3 z-50 origin-top-right"
                                     >
-                                        <User size={16} /> Editar Perfil
-                                    </button>
+                                        <div className="px-4 pb-2.5 border-b border-slate-100 flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-bold text-slate-800 text-sm">Citas de Hoy</span>
+                                                <span className="text-xs bg-blue-100 text-blue-800 font-semibold px-2 py-0.5 rounded-full">
+                                                    {pendingCount} pendientes
+                                                </span>
+                                            </div>
+                                            <NavLink
+                                                to="/"
+                                                onClick={() => setIsNotifOpen(false)}
+                                                className="text-xs text-blue-600 hover:text-blue-800 font-semibold"
+                                            >
+                                                Ver en Dashboard
+                                            </NavLink>
+                                        </div>
 
-                                    <button
-                                        onClick={() => { setShowChangePassword(true); setIsProfileMenuOpen(false); }}
-                                        className="w-full text-left px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors flex items-center gap-3"
+                                        <div className="max-h-80 overflow-y-auto divide-y divide-slate-50 px-2 py-1">
+                                            {todayReminders.length === 0 ? (
+                                                <div className="py-6 text-center text-xs text-slate-400">
+                                                    No tienes reuniones o capacitaciones pendientes hoy.
+                                                </div>
+                                            ) : (
+                                                todayReminders.map(r => {
+                                                    const isZoom = r.modality === 'zoom';
+                                                    const timeStr = new Date(r.date_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                                    return (
+                                                        <div key={r.id} className="p-2.5 hover:bg-slate-50/80 rounded-xl transition-colors space-y-1.5">
+                                                            <div className="flex items-start justify-between gap-2">
+                                                                <p className="text-xs font-bold text-slate-800 leading-tight">
+                                                                    {r.title}
+                                                                </p>
+                                                                <span className="text-[11px] font-semibold text-slate-500 shrink-0">
+                                                                    {timeStr}
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex items-center justify-between text-[11px]">
+                                                                <span className="text-slate-500 font-medium truncate max-w-[170px]">
+                                                                    {r.client_name}
+                                                                </span>
+                                                                <div className="flex items-center gap-1.5 shrink-0">
+                                                                    {isZoom && r.meeting_url && (
+                                                                        <a
+                                                                            href={r.meeting_url}
+                                                                            target="_blank"
+                                                                            rel="noopener noreferrer"
+                                                                            className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-[10px] font-semibold"
+                                                                        >
+                                                                            <Video size={11} /> Zoom
+                                                                        </a>
+                                                                    )}
+                                                                    {!isZoom && r.location_address && (
+                                                                        <a
+                                                                            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(r.location_address)}`}
+                                                                            target="_blank"
+                                                                            rel="noopener noreferrer"
+                                                                            className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-[10px] font-semibold"
+                                                                        >
+                                                                            <MapPin size={11} /> Mapa
+                                                                        </a>
+                                                                    )}
+                                                                    <button
+                                                                        onClick={() => markCompleted(r.id)}
+                                                                        className="p-1 text-slate-400 hover:text-emerald-600 rounded"
+                                                                        title="Marcar como atendida"
+                                                                    >
+                                                                        <CheckCircle2 size={14} />
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })
+                                            )}
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+
+                        {/* User Profile Dropdown */}
+                        <div className="relative" ref={menuRef}>
+                            <button
+                                onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                                className="flex items-center gap-3 pl-1 pr-2 py-1 rounded-full hover:bg-slate-100/50 transition-colors border border-transparent hover:border-slate-200/50"
+                            >
+                                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-xs font-bold text-white shadow-md shadow-blue-500/20">
+                                    {getInitials()}
+                                </div>
+                                <ChevronDown size={14} className={`text-slate-400 transition-transform duration-200 ${isProfileMenuOpen ? 'rotate-180' : ''}`} />
+                            </button>
+
+                            <AnimatePresence>
+                                {isProfileMenuOpen && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                        transition={{ duration: 0.15 }}
+                                        className="absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden py-2 z-50 origin-top-right"
                                     >
-                                        <Lock size={16} /> Cambiar Contraseña
-                                    </button>
+                                        <div className="px-4 py-3 border-b border-slate-50 mb-2">
+                                            <p className="text-sm font-semibold text-slate-800 truncate">{displayName}</p>
+                                            <p className="text-xs text-slate-400 truncate">{user?.email}</p>
+                                        </div>
 
-                                    <div className="h-px bg-slate-50 my-2" />
+                                        <button
+                                            onClick={() => { setShowEditProfile(true); setIsProfileMenuOpen(false); }}
+                                            className="w-full text-left px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors flex items-center gap-3"
+                                        >
+                                            <User size={16} /> Editar Perfil
+                                        </button>
 
-                                    <button
-                                        onClick={handleSignOut}
-                                        className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-3"
-                                    >
-                                        <LogOut size={16} /> Cerrar Sesión
-                                    </button>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
+                                        <button
+                                            onClick={() => { setShowChangePassword(true); setIsProfileMenuOpen(false); }}
+                                            className="w-full text-left px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors flex items-center gap-3"
+                                        >
+                                            <Lock size={16} /> Cambiar Contraseña
+                                        </button>
+
+                                        <div className="h-px bg-slate-50 my-2" />
+
+                                        <button
+                                            onClick={handleSignOut}
+                                            className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-3"
+                                        >
+                                            <LogOut size={16} /> Cerrar Sesión
+                                        </button>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
                     </div>
                 </div>
             </motion.nav>
@@ -164,7 +279,19 @@ export default function Navbar() {
                 <div className="flex items-center gap-2">
                     <img src={logo} alt="Azur Logo" className="h-9 w-auto object-contain" />
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
+                    {/* Mobile Bell Button */}
+                    <button
+                        onClick={() => setIsNotifOpen(!isNotifOpen)}
+                        className="relative p-2 rounded-xl text-slate-600 hover:bg-slate-100"
+                    >
+                        <Bell size={20} />
+                        {pendingCount > 0 && (
+                            <span className="absolute top-1 right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">
+                                {pendingCount}
+                            </span>
+                        )}
+                    </button>
                     <button
                         onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
                         className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-xs font-bold text-white"
