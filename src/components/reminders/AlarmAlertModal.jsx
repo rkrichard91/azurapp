@@ -1,7 +1,7 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Video, MapPin, Bell, Clock, CheckCircle, MessageSquare, ExternalLink, X } from 'lucide-react';
+import { MapPin, Bell, Clock, CheckCircle, MessageSquare, ExternalLink, X } from 'lucide-react';
 import { useRemindersContext } from '../../context/ReminderContext';
 
 export default function AlarmAlertModal() {
@@ -9,15 +9,15 @@ export default function AlarmAlertModal() {
 
     if (!activeAlarm) return null;
 
-    const isZoom = activeAlarm.modality === 'zoom';
     const eventTime = new Date(activeAlarm.date_time);
     const timeFormatted = eventTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     const typeConfig = {
-        capacitacion: { label: 'Capacitación', bg: 'bg-purple-100 text-purple-800 border-purple-200' },
+        reunion_comercial: { label: 'Reunión Comercial', bg: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
         reunion_cliente: { label: 'Reunión Comercial', bg: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
-        soporte_tecnico: { label: 'Soporte Técnico', bg: 'bg-amber-100 text-amber-800 border-amber-200' },
-        otro: { label: 'Recordatorio', bg: 'bg-blue-100 text-blue-800 border-blue-200' }
+        otro: { label: 'Otro Asunto', bg: 'bg-blue-100 text-blue-800 border-blue-200' },
+        capacitacion: { label: 'Reunión Comercial', bg: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
+        soporte_tecnico: { label: 'Otro Asunto', bg: 'bg-blue-100 text-blue-800 border-blue-200' }
     };
 
     const typeInfo = typeConfig[activeAlarm.type] || typeConfig.otro;
@@ -26,9 +26,7 @@ export default function AlarmAlertModal() {
     const handleWhatsApp = () => {
         if (!activeAlarm.client_phone) return;
         const phone = activeAlarm.client_phone.replace(/\D/g, '');
-        const message = isZoom
-            ? `Hola ${activeAlarm.client_name}, te saluda el equipo de Azur. Te recordamos que está por iniciar nuestra reunión (${activeAlarm.title}) vía Zoom: ${activeAlarm.meeting_url || ''}`
-            : `Hola ${activeAlarm.client_name}, te saluda el equipo de Azur. Te recordamos nuestra visita/reunión presencial programada para hoy: ${activeAlarm.title}. ¡Nos vemos pronto!`;
+        const message = `Hola ${activeAlarm.client_name}, te saluda el equipo de Azur. Te recordamos que está por iniciar: ${activeAlarm.title}. ¡Nos vemos pronto!`;
         window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
     };
 
@@ -74,19 +72,10 @@ export default function AlarmAlertModal() {
 
                     {/* Content */}
                     <div className="p-6 space-y-4">
-                        <div className="flex flex-wrap items-center gap-2">
+                        <div className="flex items-center gap-2">
                             <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${typeInfo.bg}`}>
                                 {typeInfo.label}
                             </span>
-                            {isZoom ? (
-                                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 border border-blue-200 flex items-center gap-1.5">
-                                    <Video size={13} /> Vía Zoom
-                                </span>
-                            ) : (
-                                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center gap-1.5">
-                                    <MapPin size={13} /> Presencial
-                                </span>
-                            )}
                         </div>
 
                         <div>
@@ -99,49 +88,27 @@ export default function AlarmAlertModal() {
                             </p>
                         </div>
 
-                        {/* Modality Specific Details */}
-                        {isZoom ? (
-                            <div className="p-4 bg-blue-50/80 rounded-2xl border border-blue-200/80 space-y-2">
-                                <div className="text-xs font-semibold text-blue-800 uppercase tracking-wider flex items-center gap-1.5">
-                                    <Video size={14} /> Sala Virtual / Enlace
+                        {/* Location details if available */}
+                        {activeAlarm.location_address && (
+                            <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+                                <div className="text-xs font-semibold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                                    <MapPin size={14} className="text-blue-600" /> Ubicación / Lugar
                                 </div>
-                                {activeAlarm.meeting_url ? (
-                                    <a
-                                        href={activeAlarm.meeting_url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="inline-flex items-center justify-center w-full gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-md transition-all hover:scale-[1.01]"
-                                    >
-                                        <Video size={18} />
-                                        Entrar a la Sala de Zoom ahora
-                                        <ExternalLink size={15} />
-                                    </a>
-                                ) : (
-                                    <p className="text-xs text-blue-600 italic">No se especificó URL de Zoom</p>
-                                )}
-                            </div>
-                        ) : (
-                            <div className="p-4 bg-emerald-50/80 rounded-2xl border border-emerald-200/80 space-y-2">
-                                <div className="text-xs font-semibold text-emerald-800 uppercase tracking-wider flex items-center gap-1.5">
-                                    <MapPin size={14} /> Ubicación de la Visita Presencial
-                                </div>
-                                <p className="text-sm text-slate-700 font-medium">{activeAlarm.location_address || 'Sin dirección registrada'}</p>
-                                {activeAlarm.location_address && (
-                                    <button
-                                        onClick={handleOpenMap}
-                                        className="inline-flex items-center justify-center w-full gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-all"
-                                    >
-                                        <MapPin size={16} />
-                                        Abrir en Google Maps
-                                        <ExternalLink size={14} />
-                                    </button>
-                                )}
+                                <p className="text-sm text-slate-700 font-medium">{activeAlarm.location_address}</p>
+                                <button
+                                    onClick={handleOpenMap}
+                                    className="inline-flex items-center justify-center w-full gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-sm transition-all"
+                                >
+                                    <MapPin size={14} />
+                                    Abrir en Google Maps
+                                    <ExternalLink size={13} />
+                                </button>
                             </div>
                         )}
 
                         {activeAlarm.notes && (
                             <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                                <p className="text-xs text-slate-500 font-medium mb-1">Notas / Instrucciones:</p>
+                                <p className="text-xs text-slate-500 font-medium mb-1">Notas / Detalles:</p>
                                 <p className="text-sm text-slate-700 whitespace-pre-wrap">{activeAlarm.notes}</p>
                             </div>
                         )}
@@ -150,10 +117,10 @@ export default function AlarmAlertModal() {
                         {activeAlarm.client_phone && (
                             <button
                                 onClick={handleWhatsApp}
-                                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl border border-emerald-200 font-medium text-sm transition-colors"
+                                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl border border-emerald-200 font-semibold text-xs transition-colors"
                             >
                                 <MessageSquare size={16} />
-                                Enviar recordatorio por WhatsApp al cliente
+                                Notificar por WhatsApp al cliente
                             </button>
                         )}
                     </div>
@@ -170,7 +137,7 @@ export default function AlarmAlertModal() {
 
                         <button
                             onClick={() => markCompleted(activeAlarm.id)}
-                            className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-xl shadow-md transition-colors text-sm"
+                            className="inline-flex items-center gap-1.5 px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md transition-colors text-sm"
                         >
                             <CheckCircle size={16} />
                             Marcar como Atendido

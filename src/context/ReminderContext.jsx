@@ -127,18 +127,18 @@ export function ReminderProvider({ children }) {
                     // 2. Browser native notification if allowed
                     if ('Notification' in window && Notification.permission === 'granted') {
                         const typeLabels = {
-                            capacitacion: '🎓 Capacitación',
+                            reunion_comercial: '🤝 Reunión Comercial',
                             reunion_cliente: '🤝 Reunión Comercial',
-                            soporte_tecnico: '🛠️ Soporte Técnico',
-                            otro: '📌 Recordatorio'
+                            otro: '📌 Otro Asunto',
+                            capacitacion: '🤝 Reunión Comercial',
+                            soporte_tecnico: '📌 Otro Asunto'
                         };
-                        const modalityLabel = reminder.modality === 'zoom' ? '💻 Vía Zoom' : '🏢 Presencial';
                         const minutesLeft = Math.max(0, Math.round((eventTime - now) / 60000));
                         const timeMsg = minutesLeft === 0 ? '¡Comienza AHORA!' : `En ${minutesLeft} min`;
 
                         try {
                             new Notification(`⏰ ${typeLabels[reminder.type] || 'Recordatorio'} - ${timeMsg}`, {
-                                body: `Cliente: ${reminder.client_name}\nModalidad: ${modalityLabel}\n${reminder.title}`,
+                                body: `Cliente: ${reminder.client_name}\n${reminder.title}`,
                                 icon: '/favicon.ico'
                             });
                         } catch (err) {

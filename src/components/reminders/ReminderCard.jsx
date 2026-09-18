@@ -1,11 +1,10 @@
 import React from 'react';
-import { Video, MapPin, Clock, CheckCircle2, Circle, MessageSquare, ExternalLink, Edit2, Trash2, Calendar } from 'lucide-react';
+import { MapPin, Clock, CheckCircle2, Circle, MessageSquare, ExternalLink, Edit2, Trash2 } from 'lucide-react';
 import { useRemindersContext } from '../../context/ReminderContext';
 
 export default function ReminderCard({ reminder, onEdit }) {
     const { markCompleted, deleteReminder } = useRemindersContext();
 
-    const isZoom = reminder.modality === 'zoom';
     const isCompleted = reminder.status === 'completada';
 
     const eventDate = new Date(reminder.date_time);
@@ -16,10 +15,11 @@ export default function ReminderCard({ reminder, onEdit }) {
     const dateStr = eventDate.toLocaleDateString([], { day: '2-digit', month: 'short' });
 
     const typeConfig = {
-        capacitacion: { label: 'Capacitación', color: 'bg-purple-100 text-purple-800 border-purple-200' },
+        reunion_comercial: { label: 'Reunión Comercial', color: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
         reunion_cliente: { label: 'Reunión Comercial', color: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
-        soporte_tecnico: { label: 'Soporte Técnico', color: 'bg-amber-100 text-amber-800 border-amber-200' },
-        otro: { label: 'Recordatorio', color: 'bg-blue-100 text-blue-800 border-blue-200' }
+        otro: { label: 'Otro Asunto', color: 'bg-blue-100 text-blue-800 border-blue-200' },
+        capacitacion: { label: 'Reunión Comercial', color: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
+        soporte_tecnico: { label: 'Otro Asunto', color: 'bg-blue-100 text-blue-800 border-blue-200' }
     };
 
     const typeInfo = typeConfig[reminder.type] || typeConfig.otro;
@@ -28,9 +28,7 @@ export default function ReminderCard({ reminder, onEdit }) {
     const handleWhatsApp = () => {
         if (!reminder.client_phone) return;
         const phone = reminder.client_phone.replace(/\D/g, '');
-        const message = isZoom
-            ? `Hola ${reminder.client_name}, te saluda el equipo de Azur. Te confirmamos nuestra reunión (${reminder.title}) vía Zoom programada para ${isToday ? 'hoy a las ' + timeStr : dateStr + ' a las ' + timeStr}: ${reminder.meeting_url || ''}`
-            : `Hola ${reminder.client_name}, te saluda el equipo de Azur. Te confirmamos nuestra visita presencial programada para ${isToday ? 'hoy a las ' + timeStr : dateStr + ' a las ' + timeStr} (${reminder.title}). ¡Saludos!`;
+        const message = `Hola ${reminder.client_name}, te saluda el equipo de Azur. Te confirmamos el recordatorio para ${isToday ? 'hoy a las ' + timeStr : dateStr + ' a las ' + timeStr} (${reminder.title}). ¡Saludos!`;
         window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
     };
 
@@ -54,17 +52,7 @@ export default function ReminderCard({ reminder, onEdit }) {
                         {typeInfo.label}
                     </span>
 
-                    {isZoom ? (
-                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 flex items-center gap-1">
-                            <Video size={12} /> Zoom
-                        </span>
-                    ) : (
-                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1">
-                            <MapPin size={12} /> Presencial
-                        </span>
-                    )}
-
-                    <span className="text-xs font-semibold text-slate-700 flex items-center gap-1 ml-auto">
+                    <span className="text-xs font-semibold text-slate-700 flex items-center gap-1">
                         <Clock size={13} className={isToday ? 'text-blue-600' : 'text-slate-400'} />
                         {isToday ? `Hoy, ${timeStr}` : `${dateStr}, ${timeStr}`}
                     </span>
@@ -102,30 +90,16 @@ export default function ReminderCard({ reminder, onEdit }) {
                 </p>
             </div>
 
-            {/* Address or Meeting Link Display */}
-            {isZoom && reminder.meeting_url && (
-                <div className="mb-3 p-2 bg-blue-50/60 rounded-xl border border-blue-100 text-xs text-blue-800 flex items-center justify-between">
-                    <span className="truncate max-w-[240px]">{reminder.meeting_url}</span>
-                    <a
-                        href={reminder.meeting_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 font-bold text-blue-600 hover:text-blue-800 ml-2"
-                    >
-                        Entrar <ExternalLink size={12} />
-                    </a>
-                </div>
-            )}
-
-            {!isZoom && reminder.location_address && (
-                <div className="mb-3 p-2 bg-emerald-50/60 rounded-xl border border-emerald-100 text-xs text-emerald-900 flex items-center justify-between">
+            {/* Address if exists */}
+            {reminder.location_address && (
+                <div className="mb-3 p-2 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-700 flex items-center justify-between">
                     <span className="truncate max-w-[240px] flex items-center gap-1">
-                        <MapPin size={13} className="shrink-0 text-emerald-600" />
+                        <MapPin size={13} className="shrink-0 text-slate-500" />
                         {reminder.location_address}
                     </span>
                     <button
                         onClick={handleOpenMap}
-                        className="inline-flex items-center gap-1 font-bold text-emerald-700 hover:text-emerald-900 ml-2 shrink-0"
+                        className="inline-flex items-center gap-1 font-bold text-blue-600 hover:text-blue-800 ml-2 shrink-0"
                     >
                         Mapa <ExternalLink size={12} />
                     </button>
@@ -133,29 +107,18 @@ export default function ReminderCard({ reminder, onEdit }) {
             )}
 
             {reminder.notes && (
-                <p className="text-xs text-slate-500 bg-slate-50 p-2 rounded-lg mb-3 line-clamp-2">
+                <p className="text-xs text-slate-500 bg-slate-50 p-2.5 rounded-xl mb-3 line-clamp-2">
                     {reminder.notes}
                 </p>
             )}
 
             {/* Quick Action Footer */}
-            <div className="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+            <div className="pt-2.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
-                    {isZoom && reminder.meeting_url && (
-                        <a
-                            href={reminder.meeting_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors"
-                        >
-                            <Video size={13} /> Unirse a Zoom
-                        </a>
-                    )}
-
-                    {!isZoom && reminder.location_address && (
+                    {reminder.location_address && (
                         <button
                             onClick={handleOpenMap}
-                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors"
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition-colors"
                         >
                             <MapPin size={13} /> Ver Mapa
                         </button>
@@ -182,7 +145,7 @@ export default function ReminderCard({ reminder, onEdit }) {
                 >
                     {isCompleted ? (
                         <>
-                            <CheckCircle2 size={14} className="text-emerald-600" /> Completada
+                            <CheckCircle2 size={14} className="text-emerald-600" /> Lista
                         </>
                     ) : (
                         <>

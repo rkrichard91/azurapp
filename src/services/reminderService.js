@@ -52,8 +52,8 @@ export const reminderService = {
     async createReminder(reminderData) {
         const payload = {
             title: reminderData.title,
-            type: reminderData.type || 'capacitacion',
-            modality: reminderData.modality || 'zoom',
+            type: reminderData.type || 'reunion_comercial',
+            modality: reminderData.modality || 'presencial',
             client_name: reminderData.client_name,
             client_phone: reminderData.client_phone || '',
             client_email: reminderData.client_email || '',

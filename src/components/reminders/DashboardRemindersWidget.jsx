@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, Plus, Bell, Clock, Search, Video, MapPin, CheckCircle, AlertCircle } from 'lucide-react';
+import { Calendar, Plus, Bell, Clock, Search } from 'lucide-react';
 import { useRemindersContext } from '../../context/ReminderContext';
 import ReminderCard from './ReminderCard';
 import ReminderModal from './ReminderModal';
@@ -61,9 +61,8 @@ export default function DashboardRemindersWidget() {
         return new Date(r.date_time).toISOString().split('T')[0] === todayStr;
     });
 
-    const countCapacitaciones = todayEvents.filter(r => r.type === 'capacitacion').length;
-    const countSoporte = todayEvents.filter(r => r.type === 'soporte_tecnico').length;
-    const countComercial = todayEvents.filter(r => r.type === 'reunion_cliente').length;
+    const countComercial = todayEvents.filter(r => r.type === 'reunion_comercial' || r.type === 'reunion_cliente' || r.type === 'capacitacion').length;
+    const countOtros = todayEvents.filter(r => r.type === 'otro' || r.type === 'soporte_tecnico').length;
 
     const handleEdit = (reminder) => {
         setEditingReminder(reminder);
@@ -89,7 +88,7 @@ export default function DashboardRemindersWidget() {
                                 Agenda & Recordatorios
                             </h2>
                             <p className="text-xs text-slate-500 font-medium">
-                                Capacitaciones, soporte y reuniones vía Zoom o Presenciales con alertas
+                                Gestiona reuniones comerciales y asuntos pendientes con alertas
                             </p>
                         </div>
                     </div>
@@ -113,50 +112,40 @@ export default function DashboardRemindersWidget() {
                         className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold shadow-lg shadow-blue-600/20 hover:shadow-blue-600/30 transition-all hover:scale-[1.02]"
                     >
                         <Plus size={18} />
-                        Nueva Cita / Visita
+                        Nuevo Recordatorio
                     </button>
                 </div>
             </div>
 
             {/* Metrics Ribbon for Today */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 my-6">
-                <div className="p-3.5 bg-blue-50/70 rounded-2xl border border-blue-100 flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 my-6">
+                <div className="p-4 bg-blue-50/70 rounded-2xl border border-blue-100 flex items-center gap-3.5">
+                    <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-base shadow-sm">
                         {todayEvents.length}
                     </div>
                     <div>
-                        <div className="text-xs font-semibold text-blue-950">Total Hoy</div>
-                        <div className="text-[11px] text-blue-600">Reuniones y visitas</div>
+                        <div className="text-sm font-bold text-blue-950">Total para Hoy</div>
+                        <div className="text-xs text-blue-600">Reuniones y asuntos programados</div>
                     </div>
                 </div>
 
-                <div className="p-3.5 bg-purple-50/70 rounded-2xl border border-purple-100 flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-purple-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">
-                        {countCapacitaciones}
-                    </div>
-                    <div>
-                        <div className="text-xs font-semibold text-purple-950">Capacitaciones</div>
-                        <div className="text-[11px] text-purple-600">Onboarding / Planes</div>
-                    </div>
-                </div>
-
-                <div className="p-3.5 bg-amber-50/70 rounded-2xl border border-amber-100 flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-amber-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">
-                        {countSoporte}
-                    </div>
-                    <div>
-                        <div className="text-xs font-semibold text-amber-950">Soporte Técnico</div>
-                        <div className="text-[11px] text-amber-600">Firmas / Incidencias</div>
-                    </div>
-                </div>
-
-                <div className="p-3.5 bg-emerald-50/70 rounded-2xl border border-emerald-100 flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">
+                <div className="p-4 bg-emerald-50/70 rounded-2xl border border-emerald-100 flex items-center gap-3.5">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-base shadow-sm">
                         {countComercial}
                     </div>
                     <div>
-                        <div className="text-xs font-semibold text-emerald-950">Comercial / Demos</div>
-                        <div className="text-[11px] text-emerald-600">Clientes & Prospectos</div>
+                        <div className="text-sm font-bold text-emerald-950">Reuniones Comerciales</div>
+                        <div className="text-xs text-emerald-600">Cierres, demos y visitas</div>
+                    </div>
+                </div>
+
+                <div className="p-4 bg-slate-100/70 rounded-2xl border border-slate-200 flex items-center gap-3.5">
+                    <div className="w-10 h-10 rounded-xl bg-slate-800 text-white flex items-center justify-center font-bold text-base shadow-sm">
+                        {countOtros}
+                    </div>
+                    <div>
+                        <div className="text-sm font-bold text-slate-900">Otros Asuntos</div>
+                        <div className="text-xs text-slate-600">Llamadas y pendientes varios</div>
                     </div>
                 </div>
             </div>
@@ -214,17 +203,17 @@ export default function DashboardRemindersWidget() {
                     </div>
                     <h4 className="text-base font-bold text-slate-800 mb-1">
                         {activeTab === 'hoy'
-                            ? 'No hay citas o capacitaciones agendadas para hoy'
+                            ? 'No tienes reuniones ni asuntos pendientes para hoy'
                             : 'No se encontraron recordatorios en esta vista'}
                     </h4>
                     <p className="text-xs text-slate-500 max-w-md mx-auto mb-4">
-                        Agenda una visita presencial o reunión por Zoom para mantener a tus clientes y soporte atendidos a tiempo.
+                        Agenda una reunión comercial u otro asunto para mantener tus compromisos comerciales al día.
                     </p>
                     <button
                         onClick={handleNew}
                         className="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow transition-colors"
                     >
-                        <Plus size={15} /> Agendar Primera Cita
+                        <Plus size={15} /> Agendar Recordatorio
                     </button>
                 </div>
             ) : (

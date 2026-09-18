@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Calendar, Clock, Video, MapPin, User, Phone, Mail, FileText, Bell, Sparkles } from 'lucide-react';
+import { X, Calendar, Clock, MapPin, User, Phone, FileText, Bell, Sparkles } from 'lucide-react';
 import { useRemindersContext } from '../../context/ReminderContext';
 
 export default function ReminderModal({ isOpen, onClose, initialData = null }) {
@@ -9,13 +9,10 @@ export default function ReminderModal({ isOpen, onClose, initialData = null }) {
 
     const [formData, setFormData] = useState({
         title: '',
-        type: 'capacitacion',
-        modality: 'zoom',
+        type: 'reunion_comercial',
         client_name: '',
         client_phone: '',
-        client_email: '',
         date_time: '',
-        meeting_url: '',
         location_address: '',
         notify_advance_minutes: 15,
         notes: ''
@@ -27,7 +24,6 @@ export default function ReminderModal({ isOpen, onClose, initialData = null }) {
     // Prepopulate or set defaults
     useEffect(() => {
         if (initialData) {
-            // Format ISO date to YYYY-MM-DDTHH:mm
             let formattedDate = '';
             if (initialData.date_time) {
                 const d = new Date(initialData.date_time);
@@ -35,34 +31,31 @@ export default function ReminderModal({ isOpen, onClose, initialData = null }) {
                 formattedDate = d.toISOString().slice(0, 16);
             }
 
+            const initialType = initialData.type === 'otro' || initialData.type === 'soporte_tecnico'
+                ? 'otro'
+                : 'reunion_comercial';
+
             setFormData({
                 title: initialData.title || '',
-                type: initialData.type || 'capacitacion',
-                modality: initialData.modality || 'zoom',
+                type: initialType,
                 client_name: initialData.client_name || '',
                 client_phone: initialData.client_phone || '',
-                client_email: initialData.client_email || '',
                 date_time: formattedDate,
-                meeting_url: initialData.meeting_url || '',
                 location_address: initialData.location_address || '',
                 notify_advance_minutes: initialData.notify_advance_minutes ?? 15,
                 notes: initialData.notes || ''
             });
         } else {
-            // Default to next hour
             const nextHour = new Date();
             nextHour.setHours(nextHour.getHours() + 1, 0, 0, 0);
             nextHour.setMinutes(nextHour.getMinutes() - nextHour.getTimezoneOffset());
 
             setFormData({
                 title: '',
-                type: 'capacitacion',
-                modality: 'zoom',
+                type: 'reunion_comercial',
                 client_name: '',
                 client_phone: '',
-                client_email: '',
                 date_time: nextHour.toISOString().slice(0, 16),
-                meeting_url: '',
                 location_address: '',
                 notify_advance_minutes: 15,
                 notes: ''
@@ -78,11 +71,11 @@ export default function ReminderModal({ isOpen, onClose, initialData = null }) {
         setError('');
 
         if (!formData.title.trim()) {
-            setError('Por favor ingresa un título para el recordatorio.');
+            setError('Por favor ingresa un título o asunto.');
             return;
         }
         if (!formData.client_name.trim()) {
-            setError('Por favor ingresa el nombre del cliente.');
+            setError('Por favor ingresa el nombre del cliente o contacto.');
             return;
         }
         if (!formData.date_time) {
@@ -94,16 +87,16 @@ export default function ReminderModal({ isOpen, onClose, initialData = null }) {
             setIsSubmitting(true);
             const isoDateTime = new Date(formData.date_time).toISOString();
 
+            const payload = {
+                ...formData,
+                date_time: isoDateTime,
+                modality: 'presencial' // standard default
+            };
+
             if (initialData?.id) {
-                await updateReminder(initialData.id, {
-                    ...formData,
-                    date_time: isoDateTime
-                });
+                await updateReminder(initialData.id, payload);
             } else {
-                await createReminder({
-                    ...formData,
-                    date_time: isoDateTime
-                });
+                await createReminder(payload);
             }
             onClose();
         } catch (err) {
@@ -114,7 +107,6 @@ export default function ReminderModal({ isOpen, onClose, initialData = null }) {
         }
     };
 
-    // Quick presets for title
     const applyPreset = (presetTitle, presetType) => {
         setFormData(prev => ({
             ...prev,
@@ -130,7 +122,7 @@ export default function ReminderModal({ isOpen, onClose, initialData = null }) {
                     initial={{ scale: 0.95, opacity: 0, y: 15 }}
                     animate={{ scale: 1, opacity: 1, y: 0 }}
                     exit={{ scale: 0.95, opacity: 0, y: 15 }}
-                    className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden my-auto max-h-[90vh] flex flex-col"
+                    className="relative w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden my-auto max-h-[92vh] flex flex-col"
                 >
                     {/* Header */}
                     <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-5 text-white flex items-center justify-between shrink-0">
@@ -140,10 +132,10 @@ export default function ReminderModal({ isOpen, onClose, initialData = null }) {
                             </div>
                             <div>
                                 <h3 className="text-xl font-bold">
-                                    {initialData ? 'Editar Cita / Recordatorio' : 'Agendar Nueva Cita o Visita'}
+                                    {initialData ? 'Editar Recordatorio' : 'Nuevo Recordatorio'}
                                 </h3>
                                 <p className="text-xs text-blue-100">
-                                    Capacitaciones, soporte y reuniones con alertas
+                                    Reuniones comerciales y asuntos con alertas programadas
                                 </p>
                             </div>
                         </div>
@@ -156,183 +148,118 @@ export default function ReminderModal({ isOpen, onClose, initialData = null }) {
                     </div>
 
                     {/* Form */}
-                    <form onSubmit={handleSubmit} className="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
+                    <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[82vh] overflow-y-auto">
                         {error && (
                             <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl">
                                 {error}
                             </div>
                         )}
 
-                        {/* Modality Selector (Zoom vs Presencial) */}
+                        {/* Tipo de Recordatorio: 2 Opciones Claras */}
                         <div>
                             <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                                Modalidad de la Reunión
+                                Tipo de Recordatorio
                             </label>
                             <div className="grid grid-cols-2 gap-3">
                                 <button
                                     type="button"
-                                    onClick={() => setFormData({ ...formData, modality: 'zoom' })}
-                                    className={`flex items-center justify-center gap-2.5 p-3.5 rounded-2xl border-2 font-semibold text-sm transition-all ${
-                                        formData.modality === 'zoom'
-                                            ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-sm'
-                                            : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
-                                    }`}
-                                >
-                                    <Video size={18} className={formData.modality === 'zoom' ? 'text-blue-600' : 'text-slate-400'} />
-                                    <span>💻 Vía Zoom / Virtual</span>
-                                </button>
-
-                                <button
-                                    type="button"
-                                    onClick={() => setFormData({ ...formData, modality: 'presencial', notify_advance_minutes: 30 })}
-                                    className={`flex items-center justify-center gap-2.5 p-3.5 rounded-2xl border-2 font-semibold text-sm transition-all ${
-                                        formData.modality === 'presencial'
+                                    onClick={() => setFormData({ ...formData, type: 'reunion_comercial' })}
+                                    className={`flex items-center justify-center gap-2 p-3 rounded-2xl border-2 font-bold text-sm transition-all ${
+                                        formData.type === 'reunion_comercial'
                                             ? 'border-emerald-600 bg-emerald-50 text-emerald-800 shadow-sm'
                                             : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
                                     }`}
                                 >
-                                    <MapPin size={18} className={formData.modality === 'presencial' ? 'text-emerald-600' : 'text-slate-400'} />
-                                    <span>🏢 Visita Presencial</span>
+                                    <span>🤝 Reunión Comercial</span>
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() => setFormData({ ...formData, type: 'otro' })}
+                                    className={`flex items-center justify-center gap-2 p-3 rounded-2xl border-2 font-bold text-sm transition-all ${
+                                        formData.type === 'otro'
+                                            ? 'border-blue-600 bg-blue-50 text-blue-800 shadow-sm'
+                                            : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                                    }`}
+                                >
+                                    <span>📌 Otro Asunto</span>
                                 </button>
                             </div>
                         </div>
 
-                        {/* Event Type & Quick Presets */}
-                        <div>
-                            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                                Tipo de Actividad
-                            </label>
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                                {[
-                                    { id: 'capacitacion', label: '🎓 Capacitación', color: 'hover:border-purple-300' },
-                                    { id: 'soporte_tecnico', label: '🛠️ Soporte Técnico', color: 'hover:border-amber-300' },
-                                    { id: 'reunion_cliente', label: '🤝 Reunión Comercial', color: 'hover:border-emerald-300' },
-                                    { id: 'otro', label: '📌 Otro Asunto', color: 'hover:border-blue-300' },
-                                ].map(item => (
-                                    <button
-                                        key={item.id}
-                                        type="button"
-                                        onClick={() => setFormData({ ...formData, type: item.id })}
-                                        className={`px-3 py-2 rounded-xl text-xs font-semibold border transition-all text-center ${
-                                            formData.type === item.id
-                                                ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
-                                                : `bg-slate-50 text-slate-700 border-slate-200 ${item.color}`
-                                        }`}
-                                    >
-                                        {item.label}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Presets chips */}
+                        {/* Ejemplos rápidos */}
                         <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-500">
-                            <span className="flex items-center gap-1"><Sparkles size={13} className="text-amber-500" /> Ejemplos:</span>
+                            <span className="flex items-center gap-1"><Sparkles size={13} className="text-amber-500" /> Plantillas:</span>
                             <button
                                 type="button"
-                                onClick={() => applyPreset('Capacitación Sistema & Facturación', 'capacitacion')}
-                                className="px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600"
+                                onClick={() => applyPreset('Reunión de Cierre de Venta', 'reunion_comercial')}
+                                className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium transition-colors"
                             >
-                                Capacitación Facturación
+                                Cierre Comercial
                             </button>
                             <button
                                 type="button"
-                                onClick={() => applyPreset('Soporte Firma Electrónica / API', 'soporte_tecnico')}
-                                className="px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600"
-                            >
-                                Soporte Firma / API
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => applyPreset('Demo Comercial & Cotización', 'reunion_cliente')}
-                                className="px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600"
+                                onClick={() => applyPreset('Demostración Comercial del Sistema', 'reunion_comercial')}
+                                className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium transition-colors"
                             >
                                 Demo Comercial
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => applyPreset('Llamada de Seguimiento / Propuesta', 'otro')}
+                                className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium transition-colors"
+                            >
+                                Seguimiento
                             </button>
                         </div>
 
                         {/* Title */}
                         <div>
                             <label className="block text-xs font-semibold text-slate-700 mb-1">
-                                Título del Recordatorio *
+                                Título o Asunto *
                             </label>
                             <input
                                 type="text"
                                 value={formData.title}
                                 onChange={e => setFormData({ ...formData, title: e.target.value })}
-                                placeholder="Ej: Capacitación Facturación y Módulos - Ferretería El Sol"
+                                placeholder="Ej: Reunión comercial con Gerencia - Distribuidora Los Andes"
                                 className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                                 required
                             />
                         </div>
 
-                        {/* Modality Specific Input */}
-                        {formData.modality === 'zoom' ? (
-                            <div className="p-4 bg-blue-50/60 rounded-2xl border border-blue-100 space-y-2">
-                                <label className="block text-xs font-bold text-blue-900 flex items-center gap-1.5">
-                                    <Video size={14} /> Enlace de la Reunión (Zoom / Meet)
-                                </label>
-                                <input
-                                    type="url"
-                                    value={formData.meeting_url}
-                                    onChange={e => setFormData({ ...formData, meeting_url: e.target.value })}
-                                    placeholder="https://zoom.us/j/123456789 o https://meet.google.com/..."
-                                    className="w-full px-3.5 py-2 rounded-xl border border-blue-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                                />
-                                <p className="text-[11px] text-blue-600">
-                                    Te permitirá unirte con 1 clic directo desde la alarma y enviar el link al cliente por WhatsApp.
-                                </p>
-                            </div>
-                        ) : (
-                            <div className="p-4 bg-emerald-50/60 rounded-2xl border border-emerald-100 space-y-2">
-                                <label className="block text-xs font-bold text-emerald-900 flex items-center gap-1.5">
-                                    <MapPin size={14} /> Dirección Física de la Visita Presencial
-                                </label>
-                                <input
-                                    type="text"
-                                    value={formData.location_address}
-                                    onChange={e => setFormData({ ...formData, location_address: e.target.value })}
-                                    placeholder="Ej: Av. 10 de Agosto y Colón, Edif. Torres del Parque, Piso 3"
-                                    className="w-full px-3.5 py-2 rounded-xl border border-emerald-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
-                                />
-                                <p className="text-[11px] text-emerald-700">
-                                    Podrás abrir directamente la ubicación en Google Maps desde el móvil o la app.
-                                </p>
-                            </div>
-                        )}
-
                         {/* Client details */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                             <div>
                                 <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center gap-1">
-                                    <User size={13} /> Nombre del Cliente o Empresa *
+                                    <User size={13} /> Nombre del Cliente o Contacto *
                                 </label>
                                 <input
                                     type="text"
                                     value={formData.client_name}
                                     onChange={e => setFormData({ ...formData, client_name: e.target.value })}
-                                    placeholder="Ej: Distribuidora Los Andes"
-                                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                    placeholder="Ej: Ing. Carlos Pérez"
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                                     required
                                 />
                             </div>
 
                             <div>
                                 <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center gap-1">
-                                    <Phone size={13} /> Celular / WhatsApp
+                                    <Phone size={13} /> Celular / WhatsApp (opcional)
                                 </label>
                                 <input
                                     type="tel"
                                     value={formData.client_phone}
                                     onChange={e => setFormData({ ...formData, client_phone: e.target.value })}
                                     placeholder="Ej: 0991234567"
-                                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                                 />
                             </div>
                         </div>
 
                         {/* Date Time & Notification Advance */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                             <div>
                                 <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center gap-1">
                                     <Clock size={13} /> Fecha y Hora *
@@ -341,46 +268,59 @@ export default function ReminderModal({ isOpen, onClose, initialData = null }) {
                                     type="datetime-local"
                                     value={formData.date_time}
                                     onChange={e => setFormData({ ...formData, date_time: e.target.value })}
-                                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                                     required
                                 />
                             </div>
 
                             <div>
                                 <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center gap-1">
-                                    <Bell size={13} /> Avisar con anticipación
+                                    <Bell size={13} /> Alarma / Recordar
                                 </label>
                                 <select
                                     value={formData.notify_advance_minutes}
                                     onChange={e => setFormData({ ...formData, notify_advance_minutes: Number(e.target.value) })}
-                                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white"
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white"
                                 >
                                     <option value={0}>A la hora exacta</option>
                                     <option value={5}>5 minutos antes</option>
-                                    <option value={15}>15 minutos antes (Ideal Zoom)</option>
-                                    <option value={30}>30 minutos antes (Ideal Traslado)</option>
-                                    <option value={45}>45 minutos antes</option>
+                                    <option value={15}>15 minutos antes</option>
+                                    <option value={30}>30 minutos antes</option>
                                     <option value={60}>1 hora antes</option>
                                 </select>
                             </div>
                         </div>
 
+                        {/* Location Address (Optional) */}
+                        <div>
+                            <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center gap-1">
+                                <MapPin size={13} /> Lugar o Dirección (opcional)
+                            </label>
+                            <input
+                                type="text"
+                                value={formData.location_address}
+                                onChange={e => setFormData({ ...formData, location_address: e.target.value })}
+                                placeholder="Ej: Oficinas del cliente, cafetería o dirección de visita"
+                                className="w-full px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                            />
+                        </div>
+
                         {/* Notes */}
                         <div>
                             <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center gap-1">
-                                <FileText size={13} /> Notas / Temas a tratar
+                                <FileText size={13} /> Notas / Observaciones (opcional)
                             </label>
                             <textarea
                                 rows={2}
                                 value={formData.notes}
                                 onChange={e => setFormData({ ...formData, notes: e.target.value })}
-                                placeholder="Detalles, dudas del cliente o preparativos previos..."
+                                placeholder="Detalles clave, propuesta enviada o temas a tratar..."
                                 className="w-full px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none"
                             />
                         </div>
 
                         {/* Buttons */}
-                        <div className="pt-2 flex items-center justify-end gap-3 border-t border-slate-100">
+                        <div className="pt-3 flex items-center justify-end gap-3 border-t border-slate-100">
                             <button
                                 type="button"
                                 onClick={onClose}
@@ -391,9 +331,9 @@ export default function ReminderModal({ isOpen, onClose, initialData = null }) {
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold shadow-md transition-all disabled:opacity-50"
+                                className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold shadow-md transition-all disabled:opacity-50"
                             >
-                                {isSubmitting ? 'Guardando...' : initialData ? 'Actualizar Cita' : 'Guardar en Agenda'}
+                                {isSubmitting ? 'Guardando...' : initialData ? 'Actualizar Recordatorio' : 'Guardar Recordatorio'}
                             </button>
                         </div>
                     </form>

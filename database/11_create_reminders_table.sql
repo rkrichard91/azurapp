@@ -1,20 +1,19 @@
 -- =======================================================
 -- MIGRACIÓN: Tabla de Recordatorios y Agenda (Azurapp)
--- Permite agendar capacitaciones, soporte y reuniones
--- con soporte para modalidad Zoom o Presencial
+-- Permite agendar reuniones comerciales y otros asuntos
 -- =======================================================
 
 CREATE TABLE IF NOT EXISTS public.reminders (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
     title VARCHAR(255) NOT NULL,
-    type VARCHAR(50) NOT NULL DEFAULT 'capacitacion', -- 'capacitacion', 'reunion_cliente', 'soporte_tecnico', 'otro'
-    modality VARCHAR(30) NOT NULL DEFAULT 'zoom',      -- 'zoom', 'presencial'
+    type VARCHAR(50) NOT NULL DEFAULT 'reunion_comercial', -- 'reunion_comercial', 'otro'
+    modality VARCHAR(30) DEFAULT 'presencial',
     client_name VARCHAR(150) NOT NULL,
     client_phone VARCHAR(50),
     client_email VARCHAR(100),
     date_time TIMESTAMP WITH TIME ZONE NOT NULL,
-    meeting_url TEXT,                                 -- Enlace de Zoom / Meet si es virtual
+    meeting_url TEXT,                                 -- Enlace opcional si aplica
     location_address TEXT,                            -- Dirección física si es presencial
     notify_advance_minutes INT DEFAULT 15,            -- Minutos antes para la alarma (0, 5, 15, 30, 45, 60)
     status VARCHAR(30) DEFAULT 'pendiente',           -- 'pendiente', 'en_curso', 'completada', 'cancelada'
