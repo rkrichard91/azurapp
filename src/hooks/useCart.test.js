@@ -339,7 +339,7 @@ describe('useCart Hook', () => {
             moduleProducts: mockModuleProducts
         }));
 
-        // 1. Caso 1 doctor: $150 c/u -> $150
+        // 1. Caso 1 doctor: Plan Base ($150 incluye 1 doctor) -> $150
         act(() => {
             result.current.setSelectedModules([
                 { productId: 'mod-medico', priceId: 'p-med', quantity: 1, months: 1, discount: 0 }
@@ -347,37 +347,37 @@ describe('useCart Hook', () => {
         });
         let medItem = result.current.cartItems.find(i => i.name === 'Módulo Médico');
         expect(medItem.total).toBe(150);
-        expect(medItem.details).toContain('1 doctor a $150.00 c/u');
+        expect(medItem.details).toContain('Plan Base ($150.00 - incluye 1 doctor)');
 
-        // 2. Caso 3 doctores (rango 2 a 5): $80 c/u -> 3 * 80 = 240
+        // 2. Caso 3 doctores (rango 2 a 5): Plan Base ($150) + 2 adic. a $80 c/u = 150 + 160 = 310
         act(() => {
             result.current.setSelectedModules([
                 { productId: 'mod-medico', priceId: 'p-med', quantity: 3, months: 1, discount: 0 }
             ]);
         });
         medItem = result.current.cartItems.find(i => i.name === 'Módulo Médico');
-        expect(medItem.total).toBe(240);
-        expect(medItem.details).toContain('3 doctores a $80.00 c/u');
+        expect(medItem.total).toBe(310);
+        expect(medItem.details).toContain('Plan Base ($150.00) + 2 doctores adicionales a $80.00 c/u');
 
-        // 3. Caso 10 doctores (rango 6 a 15): $51 c/u -> 10 * 51 = 510
+        // 3. Caso 10 doctores (rango 6 a 15): Plan Base ($150) + 9 adic. a $55 c/u = 150 + 495 = 645
         act(() => {
             result.current.setSelectedModules([
                 { productId: 'mod-medico', priceId: 'p-med', quantity: 10, months: 1, discount: 0 }
             ]);
         });
         medItem = result.current.cartItems.find(i => i.name === 'Módulo Médico');
-        expect(medItem.total).toBe(510);
-        expect(medItem.details).toContain('10 doctores a $51.00 c/u');
+        expect(medItem.total).toBe(645);
+        expect(medItem.details).toContain('Plan Base ($150.00) + 9 doctores adicionales a $55.00 c/u');
 
-        // 4. Caso 20 doctores (rango 16 en adelante): $40 c/u -> 20 * 40 = 800
+        // 4. Caso 20 doctores (rango 16 en adelante): Plan Base ($150) + 19 adic. a $40 c/u = 150 + 760 = 910
         act(() => {
             result.current.setSelectedModules([
                 { productId: 'mod-medico', priceId: 'p-med', quantity: 20, months: 1, discount: 0 }
             ]);
         });
         medItem = result.current.cartItems.find(i => i.name === 'Módulo Médico');
-        expect(medItem.total).toBe(800);
-        expect(medItem.details).toContain('20 doctores a $40.00 c/u');
+        expect(medItem.total).toBe(910);
+        expect(medItem.details).toContain('Plan Base ($150.00) + 19 doctores adicionales a $40.00 c/u');
 
         // 5. Cobranzas ($80) y Gestión Comercial ($100)
         act(() => {

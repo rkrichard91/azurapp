@@ -60,7 +60,9 @@ export default function ModuleSection({
                                         <div className="text-xs text-slate-500 font-medium flex items-center gap-2 mt-0.5 flex-wrap">
                                             {isMedical ? (
                                                 <span className="text-blue-600 font-semibold">
-                                                    {formatCurrency(getMedicalDoctorUnitPrice(qty))} c/u ({qty} {qty === 1 ? 'doctor' : 'doctores'}) / 1 AÑO
+                                                    {qty === 1
+                                                        ? `Plan Base ${formatCurrency(150)} (incluye 1 doctor) / 1 AÑO`
+                                                        : `Base ${formatCurrency(150)} + ${qty - 1} adic. a ${formatCurrency(getMedicalDoctorUnitPrice(qty))} c/u (${formatCurrency(calculateMedicalModuleCost(qty))} total) / 1 AÑO`}
                                                 </span>
                                             ) : (
                                                 <span>{formatCurrency(basePrice)} / {priceObj?.duration_label || 'PAGO ÚNICO'}</span>
@@ -268,8 +270,8 @@ export default function ModuleSection({
                                                         {isMedical ? (
                                                             <span>
                                                                 {quantity === 1 
-                                                                    ? `${formatCurrency(150)} / 1 AÑO` 
-                                                                    : `${formatCurrency(getMedicalDoctorUnitPrice(quantity))} c/u (${formatCurrency(calculateMedicalModuleCost(quantity))} total)`}
+                                                                    ? `${formatCurrency(150)} (Plan Base: 1 doctor) / 1 AÑO` 
+                                                                    : `Base ${formatCurrency(150)} + ${quantity - 1} adic. a ${formatCurrency(getMedicalDoctorUnitPrice(quantity))} c/u (${formatCurrency(calculateMedicalModuleCost(quantity))} total)`}
                                                             </span>
                                                         ) : (
                                                             `${formatCurrency(priceObj?.price || 0)} / ${priceObj?.duration_label}`

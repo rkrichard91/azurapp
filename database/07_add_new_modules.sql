@@ -17,7 +17,7 @@ AND NOT EXISTS (SELECT 1 FROM public.products WHERE name = 'Módulo de Gestión 
 
 -- 3. Insertar Módulo Médico si no existe
 INSERT INTO public.products (category_id, name, description, is_active)
-SELECT id, 'Módulo Médico', 'Gestión médica: 1 doc $150 c/u; 2 a 5 docs $80 c/u; 6 a 15 docs $51 c/u; 16+ docs $40 c/u', true
+SELECT id, 'Módulo Médico', 'Plan Base $150 (incluye 1 doctor); adicionales: 2 a 5 docs $80 c/u; 6 a 15 docs $55 c/u; 16+ docs $40 c/u', true
 FROM public.categories WHERE code = 'MODULE'
 AND NOT EXISTS (SELECT 1 FROM public.products WHERE name = 'Módulo Médico');
 

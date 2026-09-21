@@ -157,12 +157,13 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
                     const unitDoctorPrice = getMedicalDoctorUnitPrice(quantity);
                     const rawTotal = calculateMedicalModuleCost(quantity) * months;
                     total = discount > 0 ? rawTotal * (1 - (discount / 100)) : rawTotal;
-                    unitPrice = discount > 0 ? unitDoctorPrice * (1 - (discount / 100)) : unitDoctorPrice;
+                    unitPrice = discount > 0 ? (total / quantity) : (rawTotal / quantity);
 
                     if (quantity === 1) {
-                        detailsText = '1 doctor a $150.00 c/u';
+                        detailsText = 'Plan Base ($150.00 - incluye 1 doctor)';
                     } else {
-                        detailsText = `${quantity} doctores a $${unitDoctorPrice.toFixed(2)} c/u`;
+                        const extra = quantity - 1;
+                        detailsText = `Plan Base ($150.00) + ${extra} ${extra === 1 ? 'doctor adicional' : 'doctores adicionales'} a $${unitDoctorPrice.toFixed(2)} c/u`;
                     }
                     if (months > 1) {
                         detailsText += ` x ${months} meses`;
