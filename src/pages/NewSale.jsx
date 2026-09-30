@@ -161,6 +161,7 @@ export default function NewSale() {
                         openSignatureModal={cart.openSignatureModal}
                         confirmAddSignature={cart.confirmAddSignature}
                         hasPlan={cart.hasPlan}
+                        hasEligiblePlan={cart.hasEligiblePlan}
                     />
 
                     {/* 3. MÓDULOS Y PUNTOS DE EMISIÓN */}

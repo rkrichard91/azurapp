@@ -103,3 +103,41 @@ export const FEATURE_DISPLAY_NAMES = {
     "Soporte": "Soporte técnico"
 };
 
+// Planes de facturación estándar elegibles para descuento combo (Micro a Ilimitado estándar)
+export const COMBO_ELIGIBLE_PLAN_NAMES = new Set([
+    'PLAN MICRO',
+    'PLAN MINI',
+    'PLAN BASICO',
+    'PLAN ESPECIAL',
+    'PLAN BASICO II',
+    'PLAN EXPRESS',
+    'PLAN EXPRESS II',
+    'PLAN ESPECIAL II',
+    'PLAN ILIMITADO'
+]);
+
+/**
+ * Normaliza nombres de planes para comparaciones insensibles a mayúsculas y acentos
+ */
+export function isEligibleComboPlanName(planName) {
+    if (!planName) return false;
+    const norm = planName
+        .toUpperCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim();
+    return COMBO_ELIGIBLE_PLAN_NAMES.has(norm);
+}
+
+/**
+ * Valida si la duración de la firma es de 1 año (única elegible para combo)
+ */
+export function isEligibleComboSignatureDuration(durationLabel) {
+    if (!durationLabel) return false;
+    const norm = durationLabel
+        .toUpperCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim();
+    return norm.includes('1 ANO') || norm.includes('1 YEAR');
+}

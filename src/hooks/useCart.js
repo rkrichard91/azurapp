@@ -1,5 +1,12 @@
 import { useState, useMemo } from 'react';
-import { IVA_RATE, EMISSION_POINT_TIERS, calculateMedicalModuleCost, getMedicalDoctorUnitPrice } from '../constants';
+import { 
+    IVA_RATE, 
+    EMISSION_POINT_TIERS, 
+    calculateMedicalModuleCost, 
+    getMedicalDoctorUnitPrice,
+    isEligibleComboPlanName,
+    isEligibleComboSignatureDuration
+} from '../constants';
 
 
 
@@ -83,7 +90,11 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
         });
 
         // 2. Firmas
-        const hasPlan = selectedPlans.length > 0;
+        const hasEligiblePlan = selectedPlans.some(pItem => {
+            const plan = planProducts.find(p => p.id === pItem.productId);
+            return isEligibleComboPlanName(plan?.name);
+        });
+
         selectedSignatures.forEach(sig => {
             // Buscar producto por ID; si no coincide (cambio de canal), usar nombre guardado como fallback
             let product = signatureProducts.find(p => p.id === sig.productId);
@@ -98,7 +109,9 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
                 }
                 let unitPrice = 0;
 
-                const isCombo = hasPlan && !sig.isRenewal;
+                const durationStr = priceObj ? priceObj.duration_label : sig.duration_label;
+                const isOneYear = isEligibleComboSignatureDuration(durationStr);
+                const isCombo = hasEligiblePlan && !sig.isRenewal && isOneYear;
                 const effectiveDiscount = isCombo ? Math.max(sig.discount || 0, 5) : (sig.discount || 0);
 
                 if (priceObj) {
@@ -240,6 +253,14 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
     const iva = subtotal * IVA_RATE;
     const total = subtotal + iva;
 
+    // Planes elegibles para combo
+    const hasEligiblePlan = useMemo(() => {
+        return selectedPlans.some(pItem => {
+            const plan = planProducts.find(p => p.id === pItem.productId);
+            return isEligibleComboPlanName(plan?.name);
+        });
+    }, [selectedPlans, planProducts]);
+
     // Precio dinámico para el modal de firma
     const currentSigPrice = useMemo(() => {
         if (!sigForm.productId || !sigForm.priceId) return { base: 0, total: 0, isCombo: false, effectiveDiscount: 0 };
@@ -252,8 +273,8 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
             ? (parseFloat(priceObj.renewal_price) || parseFloat(priceObj.price))
             : parseFloat(priceObj.price);
 
-        const hasPlan = selectedPlans.length > 0;
-        const isCombo = hasPlan && !sigForm.isRenewal;
+        const isOneYear = isEligibleComboSignatureDuration(priceObj.duration_label || sigForm.duration_label);
+        const isCombo = hasEligiblePlan && !sigForm.isRenewal && isOneYear;
         const effectiveDiscount = isCombo ? Math.max(sigForm.discount || 0, 5) : (sigForm.discount || 0);
 
         if (effectiveDiscount > 0) {
@@ -266,7 +287,7 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
             isCombo,
             effectiveDiscount 
         };
-    }, [sigForm, signatureProducts, selectedPlans]);
+    }, [sigForm, signatureProducts, hasEligiblePlan]);
 
     // Handlers legacy
     const selectedPlanId = selectedPlans[0]?.productId || "";
@@ -460,6 +481,7 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
         cartItems, subtotal, iva, total,
         currentSigPrice,
         hasPlan: selectedPlans.length > 0,
+        hasEligiblePlan,
         // Handlers
         openPlanModal,
         confirmAddPlan,

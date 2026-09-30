@@ -1,7 +1,7 @@
 import React from 'react';
 import { Trash2 } from 'lucide-react';
 import { formatCurrency } from '../../utils/format';
-import { TOKEN_SHIPPING_OPTIONS } from '../../constants';
+import { TOKEN_SHIPPING_OPTIONS, isEligibleComboSignatureDuration } from '../../constants';
 
 /**
  * Sección de Firma Electrónica: lista de firmas + modal de agregar.
@@ -19,6 +19,7 @@ export default function SignatureSection({
     openSignatureModal,
     confirmAddSignature,
     hasPlan = false,
+    hasEligiblePlan = false,
 }) {
     return (
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
@@ -37,7 +38,10 @@ export default function SignatureSection({
                     selectedSignatures.map((sig, idx) => {
                         const p = signatureProducts.find(prod => prod.id === sig.productId);
                         const price = p?.prices.find(pr => pr.id === sig.priceId);
-                        const isCombo = hasPlan && !sig.isRenewal;
+                        const durationLabel = price?.duration_label || sig.duration_label;
+                        const isOneYear = isEligibleComboSignatureDuration(durationLabel);
+                        const effectiveHasPlan = hasEligiblePlan || hasPlan;
+                        const isCombo = effectiveHasPlan && !sig.isRenewal && isOneYear;
                         const effectiveDiscount = isCombo ? Math.max(sig.discount || 0, 5) : (sig.discount || 0);
                         const baseUnit = (sig.isRenewal ? (parseFloat(price?.renewal_price) || parseFloat(price?.price)) : parseFloat(price?.price || 0)) * (1 - effectiveDiscount / 100);
 
@@ -188,56 +192,70 @@ export default function SignatureSection({
                                 return null;
                             })()}
 
-                            {/* Renovación */}
-                            <div className="flex items-center gap-2">
-                                <input
-                                    type="checkbox"
-                                    id="renewalCheck"
-                                    checked={sigForm.isRenewal}
-                                    onChange={(e) => {
-                                        const checked = e.target.checked;
-                                        setSigForm(prev => ({
-                                            ...prev,
-                                            isRenewal: checked,
-                                            discount: (!checked && hasPlan && prev.discount === 5) ? 0 : prev.discount
-                                        }));
-                                    }}
-                                    className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                                />
-                                <label htmlFor="renewalCheck" className="text-slate-700 font-medium select-none cursor-pointer">Renovación de Firma</label>
-                            </div>
+                            {(() => {
+                                const selectedPriceObj = signatureProducts
+                                    .find(p => p.id === sigForm.productId)
+                                    ?.prices.find(pr => pr.id === sigForm.priceId);
+                                const currentDuration = selectedPriceObj?.duration_label || sigForm.duration_label;
+                                const isOneYearModal = isEligibleComboSignatureDuration(currentDuration);
+                                const effectiveHasPlan = hasEligiblePlan || hasPlan;
+                                const isModalCombo = effectiveHasPlan && !sigForm.isRenewal && isOneYearModal;
 
-                            {/* Aviso Combo si aplica */}
-                            {hasPlan && !sigForm.isRenewal && (
-                                <div className="flex items-center gap-2 p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg text-xs font-semibold text-emerald-800">
-                                    <span>🎁 Descuento Combo 5% aplicado por compra junto a un Plan</span>
-                                </div>
-                            )}
+                                return (
+                                    <>
+                                        {/* Renovación */}
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                type="checkbox"
+                                                id="renewalCheck"
+                                                checked={sigForm.isRenewal}
+                                                onChange={(e) => {
+                                                    const checked = e.target.checked;
+                                                    setSigForm(prev => ({
+                                                        ...prev,
+                                                        isRenewal: checked,
+                                                        discount: (!checked && effectiveHasPlan && isOneYearModal && prev.discount === 5) ? 0 : prev.discount
+                                                    }));
+                                                }}
+                                                className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                                            />
+                                            <label htmlFor="renewalCheck" className="text-slate-700 font-medium select-none cursor-pointer">Renovación de Firma</label>
+                                        </div>
 
-                            {/* Descuento */}
-                            <div>
-                                <label className="text-sm font-bold text-slate-600 block mb-1">Descuento</label>
-                                <select
-                                    className="w-full p-3 bg-slate-50 border border-slate-300 rounded-lg outline-none"
-                                    value={sigForm.discount}
-                                    onChange={(e) => setSigForm({ ...sigForm, discount: parseInt(e.target.value) })}
-                                >
-                                    {hasPlan && !sigForm.isRenewal ? (
-                                        <>
-                                            <option value="0">5% (Descuento Combo Automático)</option>
-                                            <option value="10">10%</option>
-                                            <option value="16">16%</option>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <option value="0">0%</option>
-                                            <option value="5">5%</option>
-                                            <option value="10">10%</option>
-                                            <option value="16">16%</option>
-                                        </>
-                                    )}
-                                </select>
-                            </div>
+                                        {/* Aviso Combo si aplica */}
+                                        {isModalCombo && (
+                                            <div className="flex items-center gap-2 p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg text-xs font-semibold text-emerald-800">
+                                                <span>🎁 Descuento Combo 5% aplicado por compra junto a Plan (Firma 1 Año)</span>
+                                            </div>
+                                        )}
+
+                                        {/* Descuento */}
+                                        <div>
+                                            <label className="text-sm font-bold text-slate-600 block mb-1">Descuento</label>
+                                            <select
+                                                className="w-full p-3 bg-slate-50 border border-slate-300 rounded-lg outline-none"
+                                                value={sigForm.discount}
+                                                onChange={(e) => setSigForm({ ...sigForm, discount: parseInt(e.target.value) })}
+                                            >
+                                                {isModalCombo ? (
+                                                    <>
+                                                        <option value="0">5% (Descuento Combo Automático)</option>
+                                                        <option value="10">10%</option>
+                                                        <option value="16">16%</option>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <option value="0">0%</option>
+                                                        <option value="5">5%</option>
+                                                        <option value="10">10%</option>
+                                                        <option value="16">16%</option>
+                                                    </>
+                                                )}
+                                            </select>
+                                        </div>
+                                    </>
+                                );
+                            })()}
 
                             {/* Tipo de Gestión */}
                             <div className="bg-emerald-50 p-3 rounded-lg border border-emerald-100 mb-4">

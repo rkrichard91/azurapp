@@ -396,27 +396,55 @@ describe('useCart Hook', () => {
     describe('Plan + Signature Combo Discount (5%)', () => {
         const mockPlanProducts = [
             {
-                id: 'plan-1',
-                name: 'Plan Pyme Ilimitado',
-                prices: [{ id: 'p-1', price: 100, duration_label: '1 Año' }]
+                id: 'plan-micro',
+                name: 'PLAN MICRO',
+                prices: [{ id: 'p-micro', price: 13, duration_label: '1 AÑO' }]
+            },
+            {
+                id: 'plan-ilimitado',
+                name: 'PLAN ILIMITADO',
+                prices: [{ id: 'p-ili', price: 150, duration_label: '1 AÑO' }]
+            },
+            {
+                id: 'plan-plus',
+                name: 'PLAN ILIMITADO PLUS',
+                prices: [{ id: 'p-plus', price: 200, duration_label: '1 AÑO' }]
+            },
+            {
+                id: 'plan-pro',
+                name: 'PLAN ILIMITADO PRO',
+                prices: [{ id: 'p-pro', price: 250, duration_label: '1 AÑO' }]
+            },
+            {
+                id: 'plan-contable',
+                name: 'PLAN CONTABLE ESENCIAL',
+                prices: [{ id: 'p-cont', price: 270, duration_label: '1 AÑO' }]
             }
         ];
 
-        it('should automatically apply 5% discount to a new signature when a plan is in cart', () => {
-            const { result } = renderHook(() => useCart({
-                ...initialProps,
-                planProducts: mockPlanProducts
-            }));
+        const mockMultiDurationSignature = {
+            id: 'sig-natural',
+            name: 'Firma P. Natural (Cédula)',
+            prices: [
+                { id: 'p1', price: 20, duration_label: '1 Año', renewal_price: 15 },
+                { id: 'p-2yr', price: 30, duration_label: '2 Años', renewal_price: 25 },
+                { id: 'p-30d', price: 10, duration_label: '30 Días', renewal_price: 10 }
+            ]
+        };
 
-            // Agregar plan
+        const testProps = {
+            ...initialProps,
+            signatureProducts: [mockMultiDurationSignature],
+            planProducts: mockPlanProducts
+        };
+
+        it('should automatically apply 5% discount to 1-year signature with PLAN MICRO', () => {
+            const { result } = renderHook(() => useCart(testProps));
+
             act(() => {
                 result.current.setSelectedPlans([
-                    { id: '1', productId: 'plan-1', priceId: 'p-1', quantity: 1, months: 1, discount: 0 }
+                    { id: '1', productId: 'plan-micro', priceId: 'p-micro', quantity: 1, months: 1, discount: 0 }
                 ]);
-            });
-
-            // Agregar firma nueva (no renovación, precio base 20)
-            act(() => {
                 result.current.setSelectedSignatures([
                     {
                         id: 'sig-1',
@@ -432,7 +460,7 @@ describe('useCart Hook', () => {
 
             const sigItem = result.current.cartItems.find(i => i.type === 'SIGNATURE');
             expect(sigItem).toBeDefined();
-            // 20 * (1 - 0.05) = 19
+            // 20 * 0.95 = 19
             expect(sigItem.unitPrice).toBe(19);
             expect(sigItem.total).toBe(19);
             expect(sigItem.isCombo).toBe(true);
@@ -440,21 +468,145 @@ describe('useCart Hook', () => {
             expect(sigItem.details).toContain('Combo Plan + Firma (5% desc.)');
         });
 
-        it('should NOT apply combo discount if signature is a renewal', () => {
-            const { result } = renderHook(() => useCart({
-                ...initialProps,
-                planProducts: mockPlanProducts
-            }));
+        it('should apply 5% discount to 1-year signature with PLAN ILIMITADO (upper bound)', () => {
+            const { result } = renderHook(() => useCart(testProps));
 
-            // Agregar plan
             act(() => {
                 result.current.setSelectedPlans([
-                    { id: '1', productId: 'plan-1', priceId: 'p-1', quantity: 1, months: 1, discount: 0 }
+                    { id: '1', productId: 'plan-ilimitado', priceId: 'p-ili', quantity: 1, months: 1, discount: 0 }
+                ]);
+                result.current.setSelectedSignatures([
+                    {
+                        id: 'sig-1',
+                        productId: 'sig-natural',
+                        priceId: 'p1',
+                        quantity: 1,
+                        isRenewal: false,
+                        discount: 0,
+                        gestion: 'Gestión Vendedor'
+                    }
                 ]);
             });
 
-            // Agregar firma como renovación (precio renovación = 15)
+            const sigItem = result.current.cartItems.find(i => i.type === 'SIGNATURE');
+            expect(sigItem.unitPrice).toBe(19);
+            expect(sigItem.isCombo).toBe(true);
+        });
+
+        it('should NOT apply combo discount for PLAN ILIMITADO PLUS or PRO', () => {
+            const { result } = renderHook(() => useCart(testProps));
+
+            // Probar con PLUS
             act(() => {
+                result.current.setSelectedPlans([
+                    { id: '1', productId: 'plan-plus', priceId: 'p-plus', quantity: 1, months: 1, discount: 0 }
+                ]);
+                result.current.setSelectedSignatures([
+                    {
+                        id: 'sig-1',
+                        productId: 'sig-natural',
+                        priceId: 'p1',
+                        quantity: 1,
+                        isRenewal: false,
+                        discount: 0,
+                        gestion: 'Gestión Vendedor'
+                    }
+                ]);
+            });
+
+            let sigItem = result.current.cartItems.find(i => i.type === 'SIGNATURE');
+            expect(sigItem.unitPrice).toBe(20);
+            expect(sigItem.isCombo).toBe(false);
+
+            // Probar con PRO
+            act(() => {
+                result.current.setSelectedPlans([
+                    { id: '1', productId: 'plan-pro', priceId: 'p-pro', quantity: 1, months: 1, discount: 0 }
+                ]);
+            });
+
+            sigItem = result.current.cartItems.find(i => i.type === 'SIGNATURE');
+            expect(sigItem.unitPrice).toBe(20);
+            expect(sigItem.isCombo).toBe(false);
+        });
+
+        it('should NOT apply combo discount for other non-eligible plans (e.g. Plan Contable)', () => {
+            const { result } = renderHook(() => useCart(testProps));
+
+            act(() => {
+                result.current.setSelectedPlans([
+                    { id: '1', productId: 'plan-contable', priceId: 'p-cont', quantity: 1, months: 1, discount: 0 }
+                ]);
+                result.current.setSelectedSignatures([
+                    {
+                        id: 'sig-1',
+                        productId: 'sig-natural',
+                        priceId: 'p1',
+                        quantity: 1,
+                        isRenewal: false,
+                        discount: 0,
+                        gestion: 'Gestión Vendedor'
+                    }
+                ]);
+            });
+
+            const sigItem = result.current.cartItems.find(i => i.type === 'SIGNATURE');
+            expect(sigItem.unitPrice).toBe(20);
+            expect(sigItem.isCombo).toBe(false);
+        });
+
+        it('should NOT apply combo discount if signature duration is NOT 1 year (e.g. 2 Años or 30 Días)', () => {
+            const { result } = renderHook(() => useCart(testProps));
+
+            // Plan Micro con Firma 2 Años
+            act(() => {
+                result.current.setSelectedPlans([
+                    { id: '1', productId: 'plan-micro', priceId: 'p-micro', quantity: 1, months: 1, discount: 0 }
+                ]);
+                result.current.setSelectedSignatures([
+                    {
+                        id: 'sig-1',
+                        productId: 'sig-natural',
+                        priceId: 'p-2yr',
+                        quantity: 1,
+                        isRenewal: false,
+                        discount: 0,
+                        gestion: 'Gestión Vendedor'
+                    }
+                ]);
+            });
+
+            let sigItem = result.current.cartItems.find(i => i.type === 'SIGNATURE');
+            expect(sigItem.unitPrice).toBe(30);
+            expect(sigItem.isCombo).toBe(false);
+
+            // Plan Micro con Firma 30 Días
+            act(() => {
+                result.current.setSelectedSignatures([
+                    {
+                        id: 'sig-2',
+                        productId: 'sig-natural',
+                        priceId: 'p-30d',
+                        quantity: 1,
+                        isRenewal: false,
+                        discount: 0,
+                        gestion: 'Gestión Vendedor'
+                    }
+                ]);
+            });
+
+            sigItem = result.current.cartItems.find(i => i.type === 'SIGNATURE');
+            expect(sigItem.unitPrice).toBe(10);
+            expect(sigItem.isCombo).toBe(false);
+        });
+
+        it('should NOT apply combo discount if signature is a renewal', () => {
+            const { result } = renderHook(() => useCart(testProps));
+
+            act(() => {
+                result.current.setSelectedPlans([
+                    { id: '1', productId: 'plan-micro', priceId: 'p-micro', quantity: 1, months: 1, discount: 0 }
+                ]);
                 result.current.setSelectedSignatures([
                     {
                         id: 'sig-1',
@@ -475,11 +627,8 @@ describe('useCart Hook', () => {
             expect(sigItem.discount).toBe(0);
         });
 
-        it('should dynamically apply and remove discount when plan is added and removed', () => {
-            const { result } = renderHook(() => useCart({
-                ...initialProps,
-                planProducts: mockPlanProducts
-            }));
+        it('should dynamically apply and remove discount when eligible plan is added and removed', () => {
+            const { result } = renderHook(() => useCart(testProps));
 
             // 1. Agregar firma sola primero
             act(() => {
@@ -500,10 +649,10 @@ describe('useCart Hook', () => {
             expect(sigItem.unitPrice).toBe(20);
             expect(sigItem.isCombo).toBe(false);
 
-            // 2. Agregar plan -> Debe activarse el 5%
+            // 2. Agregar Plan Micro -> Debe activarse el 5%
             act(() => {
                 result.current.setSelectedPlans([
-                    { id: '1', productId: 'plan-1', priceId: 'p-1', quantity: 1, months: 1, discount: 0 }
+                    { id: '1', productId: 'plan-micro', priceId: 'p-micro', quantity: 1, months: 1, discount: 0 }
                 ]);
             });
 
@@ -522,14 +671,11 @@ describe('useCart Hook', () => {
         });
 
         it('should respect a higher manual discount like 10%', () => {
-            const { result } = renderHook(() => useCart({
-                ...initialProps,
-                planProducts: mockPlanProducts
-            }));
+            const { result } = renderHook(() => useCart(testProps));
 
             act(() => {
                 result.current.setSelectedPlans([
-                    { id: '1', productId: 'plan-1', priceId: 'p-1', quantity: 1, months: 1, discount: 0 }
+                    { id: '1', productId: 'plan-micro', priceId: 'p-micro', quantity: 1, months: 1, discount: 0 }
                 ]);
                 result.current.setSelectedSignatures([
                     {
