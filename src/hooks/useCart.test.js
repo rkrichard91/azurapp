@@ -392,5 +392,163 @@ describe('useCart Hook', () => {
         expect(comItem.total).toBe(100);
         expect(result.current.subtotal).toBe(180);
     });
+
+    describe('Plan + Signature Combo Discount (5%)', () => {
+        const mockPlanProducts = [
+            {
+                id: 'plan-1',
+                name: 'Plan Pyme Ilimitado',
+                prices: [{ id: 'p-1', price: 100, duration_label: '1 Año' }]
+            }
+        ];
+
+        it('should automatically apply 5% discount to a new signature when a plan is in cart', () => {
+            const { result } = renderHook(() => useCart({
+                ...initialProps,
+                planProducts: mockPlanProducts
+            }));
+
+            // Agregar plan
+            act(() => {
+                result.current.setSelectedPlans([
+                    { id: '1', productId: 'plan-1', priceId: 'p-1', quantity: 1, months: 1, discount: 0 }
+                ]);
+            });
+
+            // Agregar firma nueva (no renovación, precio base 20)
+            act(() => {
+                result.current.setSelectedSignatures([
+                    {
+                        id: 'sig-1',
+                        productId: 'sig-natural',
+                        priceId: 'p1',
+                        quantity: 1,
+                        isRenewal: false,
+                        discount: 0,
+                        gestion: 'Gestión Vendedor'
+                    }
+                ]);
+            });
+
+            const sigItem = result.current.cartItems.find(i => i.type === 'SIGNATURE');
+            expect(sigItem).toBeDefined();
+            // 20 * (1 - 0.05) = 19
+            expect(sigItem.unitPrice).toBe(19);
+            expect(sigItem.total).toBe(19);
+            expect(sigItem.isCombo).toBe(true);
+            expect(sigItem.discount).toBe(5);
+            expect(sigItem.details).toContain('Combo Plan + Firma (5% desc.)');
+        });
+
+        it('should NOT apply combo discount if signature is a renewal', () => {
+            const { result } = renderHook(() => useCart({
+                ...initialProps,
+                planProducts: mockPlanProducts
+            }));
+
+            // Agregar plan
+            act(() => {
+                result.current.setSelectedPlans([
+                    { id: '1', productId: 'plan-1', priceId: 'p-1', quantity: 1, months: 1, discount: 0 }
+                ]);
+            });
+
+            // Agregar firma como renovación (precio renovación = 15)
+            act(() => {
+                result.current.setSelectedSignatures([
+                    {
+                        id: 'sig-1',
+                        productId: 'sig-natural',
+                        priceId: 'p1',
+                        quantity: 1,
+                        isRenewal: true,
+                        discount: 0,
+                        gestion: 'Gestión Vendedor'
+                    }
+                ]);
+            });
+
+            const sigItem = result.current.cartItems.find(i => i.type === 'SIGNATURE');
+            expect(sigItem.unitPrice).toBe(15);
+            expect(sigItem.total).toBe(15);
+            expect(sigItem.isCombo).toBe(false);
+            expect(sigItem.discount).toBe(0);
+        });
+
+        it('should dynamically apply and remove discount when plan is added and removed', () => {
+            const { result } = renderHook(() => useCart({
+                ...initialProps,
+                planProducts: mockPlanProducts
+            }));
+
+            // 1. Agregar firma sola primero
+            act(() => {
+                result.current.setSelectedSignatures([
+                    {
+                        id: 'sig-1',
+                        productId: 'sig-natural',
+                        priceId: 'p1',
+                        quantity: 1,
+                        isRenewal: false,
+                        discount: 0,
+                        gestion: 'Gestión Vendedor'
+                    }
+                ]);
+            });
+
+            let sigItem = result.current.cartItems.find(i => i.type === 'SIGNATURE');
+            expect(sigItem.unitPrice).toBe(20);
+            expect(sigItem.isCombo).toBe(false);
+
+            // 2. Agregar plan -> Debe activarse el 5%
+            act(() => {
+                result.current.setSelectedPlans([
+                    { id: '1', productId: 'plan-1', priceId: 'p-1', quantity: 1, months: 1, discount: 0 }
+                ]);
+            });
+
+            sigItem = result.current.cartItems.find(i => i.type === 'SIGNATURE');
+            expect(sigItem.unitPrice).toBe(19);
+            expect(sigItem.isCombo).toBe(true);
+
+            // 3. Quitar plan -> Debe volver a 20
+            act(() => {
+                result.current.setSelectedPlans([]);
+            });
+
+            sigItem = result.current.cartItems.find(i => i.type === 'SIGNATURE');
+            expect(sigItem.unitPrice).toBe(20);
+            expect(sigItem.isCombo).toBe(false);
+        });
+
+        it('should respect a higher manual discount like 10%', () => {
+            const { result } = renderHook(() => useCart({
+                ...initialProps,
+                planProducts: mockPlanProducts
+            }));
+
+            act(() => {
+                result.current.setSelectedPlans([
+                    { id: '1', productId: 'plan-1', priceId: 'p-1', quantity: 1, months: 1, discount: 0 }
+                ]);
+                result.current.setSelectedSignatures([
+                    {
+                        id: 'sig-1',
+                        productId: 'sig-natural',
+                        priceId: 'p1',
+                        quantity: 1,
+                        isRenewal: false,
+                        discount: 10,
+                        gestion: 'Gestión Vendedor'
+                    }
+                ]);
+            });
+
+            const sigItem = result.current.cartItems.find(i => i.type === 'SIGNATURE');
+            // 20 * (1 - 0.10) = 18
+            expect(sigItem.unitPrice).toBe(18);
+            expect(sigItem.discount).toBe(10);
+        });
+    });
 });
 

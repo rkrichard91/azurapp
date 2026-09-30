@@ -160,6 +160,7 @@ export default function NewSale() {
                         currentSigPrice={cart.currentSigPrice}
                         openSignatureModal={cart.openSignatureModal}
                         confirmAddSignature={cart.confirmAddSignature}
+                        hasPlan={cart.hasPlan}
                     />
 
                     {/* 3. MÓDULOS Y PUNTOS DE EMISIÓN */}

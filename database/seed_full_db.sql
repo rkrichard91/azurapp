@@ -36,7 +36,7 @@ BEGIN
     -- Helper para insertar plan
     -- MICRO
     INSERT INTO products (name, description, category_id, features) VALUES 
-    ('PLAN MICRO', 'Ideal para emprendedores', cat_plan_id, '{"Comprobantes año": "30", "Soporte": true, "Facturas": true, "Retenciones": false, "Notas de crédito": true, "Notas de débito": false, "Guías de remisión": false, "Liquidación compras": false, "Proforma": true, "Usuarios": "1", "Empresas": "1", "Establecimientos": "1", "Puntos de Emisión": "1", "Inventario": false, "Reportes": true, "Compras": false, "Cuentas por cobrar": false, "Cuentas por pagar": false, "SMTP propio": false, "Portal documentación": true, "ATS": false, "API REST": false}') RETURNING id INTO prod_id;
+    ('PLAN MICRO', 'Ideal para emprendedores', cat_plan_id, '{"Comprobantes año": "30", "Soporte": true, "Facturas": true, "Retenciones": false, "Notas de crédito": true, "Notas de débito": false, "Guías de remisión": false, "Liquidación compras": false, "Proforma": false, "Usuarios": "1", "Empresas": "1", "Establecimientos": "1", "Puntos de Emisión": "1", "Inventario": true, "Reportes": true, "Compras": false, "Cuentas por cobrar": false, "Cuentas por pagar": false, "SMTP propio": false, "Portal documentación": true, "ATS": false, "API REST": false}') RETURNING id INTO prod_id;
     -- Precios Micro (Compartidos)
     INSERT INTO prices (product_id, channel_id, price, duration_label) VALUES 
     (prod_id, chan_azur_id, 13.00, '1 AÑO'), (prod_id, chan_local_id, 13.00, '1 AÑO'),
@@ -64,7 +64,7 @@ BEGIN
 
     -- ESPECIAL
     INSERT INTO products (name, description, category_id, features) VALUES 
-    ('PLAN ESPECIAL', 'Funcionalidades completas', cat_plan_id, '{"Comprobantes año": "250", "Soporte": true, "Facturas": true, "Retenciones": true, "Notas de crédito": true, "Notas de débito": true, "Guías de remisión": true, "Liquidación compras": true, "Proforma": true, "Usuarios": "3", "Empresas": "1", "Establecimientos": "2", "Puntos de Emisión": "2", "Inventario": true, "Reportes": true, "Compras": true, "Cuentas por cobrar": true, "Cuentas por pagar": false, "SMTP propio": true, "Portal documentación": true, "ATS": false, "API REST": true}') RETURNING id INTO prod_id;
+    ('PLAN ESPECIAL', 'Funcionalidades completas', cat_plan_id, '{"Comprobantes año": "250", "Soporte": true, "Facturas": true, "Retenciones": true, "Notas de crédito": true, "Notas de débito": true, "Guías de remisión": true, "Liquidación compras": true, "Proforma": true, "Usuarios": "3", "Empresas": "1", "Establecimientos": "2", "Puntos de Emisión": "2", "Inventario": true, "Reportes": true, "Compras": true, "Cuentas por cobrar": true, "Cuentas por pagar": true, "SMTP propio": true, "Portal documentación": true, "ATS": false, "API REST": true}') RETURNING id INTO prod_id;
     INSERT INTO prices (product_id, channel_id, price, duration_label) VALUES (prod_id, chan_azur_id, 40.00, '1 AÑO'), (prod_id, chan_local_id, 40.00, '1 AÑO');
 
     -- BÁSICO II

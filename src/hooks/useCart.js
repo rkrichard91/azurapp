@@ -83,6 +83,7 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
         });
 
         // 2. Firmas
+        const hasPlan = selectedPlans.length > 0;
         selectedSignatures.forEach(sig => {
             // Buscar producto por ID; si no coincide (cambio de canal), usar nombre guardado como fallback
             let product = signatureProducts.find(p => p.id === sig.productId);
@@ -97,13 +98,16 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
                 }
                 let unitPrice = 0;
 
+                const isCombo = hasPlan && !sig.isRenewal;
+                const effectiveDiscount = isCombo ? Math.max(sig.discount || 0, 5) : (sig.discount || 0);
+
                 if (priceObj) {
                     let basePrice = sig.isRenewal
                         ? (parseFloat(priceObj.renewal_price) || parseFloat(priceObj.price))
                         : parseFloat(priceObj.price);
                     
-                    if (sig.discount > 0) {
-                        basePrice = basePrice * (1 - (sig.discount / 100));
+                    if (effectiveDiscount > 0) {
+                        basePrice = basePrice * (1 - (effectiveDiscount / 100));
                     }
                     unitPrice = basePrice;
                 }
@@ -124,6 +128,14 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
                     }
                 }
 
+                const detailsList = [];
+                if (sig.shipping) detailsList.push(`Envío: ${sig.shipping}`);
+                if (isCombo) {
+                    detailsList.push(`Combo Plan + Firma (${effectiveDiscount}% desc.)`);
+                } else if (effectiveDiscount > 0) {
+                    detailsList.push(`Desc. ${effectiveDiscount}%`);
+                }
+
                 items.push({
                     type: 'SIGNATURE',
                     _sigId: sig.id,
@@ -132,8 +144,10 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
                     unitPrice,
                     total,
                     duration: priceObj ? priceObj.duration_label : (sig.duration_label || ''),
-                    details: sig.shipping ? `Envío: ${sig.shipping}` : '',
-                    gestion: sig.gestion
+                    details: detailsList.join(' | '),
+                    gestion: sig.gestion,
+                    discount: effectiveDiscount,
+                    isCombo
                 });
             }
         });
@@ -228,22 +242,31 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
 
     // Precio dinámico para el modal de firma
     const currentSigPrice = useMemo(() => {
-        if (!sigForm.productId || !sigForm.priceId) return { base: 0, total: 0 };
+        if (!sigForm.productId || !sigForm.priceId) return { base: 0, total: 0, isCombo: false, effectiveDiscount: 0 };
         const prod = signatureProducts.find(p => p.id === sigForm.productId);
         const priceObj = prod?.prices.find(pr => pr.id === sigForm.priceId);
 
-        if (!priceObj) return { base: 0, total: 0 };
+        if (!priceObj) return { base: 0, total: 0, isCombo: false, effectiveDiscount: 0 };
 
         let unit = sigForm.isRenewal
             ? (parseFloat(priceObj.renewal_price) || parseFloat(priceObj.price))
             : parseFloat(priceObj.price);
 
-        if (sigForm.discount > 0) {
-            unit = unit * (1 - (sigForm.discount / 100));
+        const hasPlan = selectedPlans.length > 0;
+        const isCombo = hasPlan && !sigForm.isRenewal;
+        const effectiveDiscount = isCombo ? Math.max(sigForm.discount || 0, 5) : (sigForm.discount || 0);
+
+        if (effectiveDiscount > 0) {
+            unit = unit * (1 - (effectiveDiscount / 100));
         }
 
-        return { base: unit, total: unit * (1 + IVA_RATE) };
-    }, [sigForm, signatureProducts]);
+        return { 
+            base: unit, 
+            total: unit * (1 + IVA_RATE),
+            isCombo,
+            effectiveDiscount 
+        };
+    }, [sigForm, signatureProducts, selectedPlans]);
 
     // Handlers legacy
     const selectedPlanId = selectedPlans[0]?.productId || "";
@@ -436,6 +459,7 @@ export function useCart({ planProducts, signatureProducts, moduleProducts, emiss
         // Derivados
         cartItems, subtotal, iva, total,
         currentSigPrice,
+        hasPlan: selectedPlans.length > 0,
         // Handlers
         openPlanModal,
         confirmAddPlan,

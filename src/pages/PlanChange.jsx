@@ -70,9 +70,12 @@ export default function PlanChange() {
                 if (nameUpper.includes('ILIMITADO') || nameUpper.includes('EXPRESS') || nameUpper.includes('ESPECIAL') || nameUpper.includes('BÁSICO II')) {
                     if (feat['API REST'] === undefined) feat['API REST'] = true;
                 }
-                if (nameUpper.includes('ILIMITADO')) {
+                if (nameUpper === 'PLAN ILIMITADO' || nameUpper === 'ILIMITADO') {
                     feat['ATS'] = false;
                     feat['Generación ATS'] = false;
+                } else if (nameUpper.includes('ILIMITADO PLUS') || nameUpper.includes('ILIMITADO PRO')) {
+                    if (feat['ATS'] === undefined) feat['ATS'] = true;
+                    if (feat['Generación ATS'] === undefined) feat['Generación ATS'] = true;
                 }
             }
             plansMap[p.name] = {

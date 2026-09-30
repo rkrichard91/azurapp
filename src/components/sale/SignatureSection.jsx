@@ -18,6 +18,7 @@ export default function SignatureSection({
     currentSigPrice,
     openSignatureModal,
     confirmAddSignature,
+    hasPlan = false,
 }) {
     return (
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
@@ -36,21 +37,28 @@ export default function SignatureSection({
                     selectedSignatures.map((sig, idx) => {
                         const p = signatureProducts.find(prod => prod.id === sig.productId);
                         const price = p?.prices.find(pr => pr.id === sig.priceId);
+                        const isCombo = hasPlan && !sig.isRenewal;
+                        const effectiveDiscount = isCombo ? Math.max(sig.discount || 0, 5) : (sig.discount || 0);
+                        const baseUnit = (sig.isRenewal ? (parseFloat(price?.renewal_price) || parseFloat(price?.price)) : parseFloat(price?.price || 0)) * (1 - effectiveDiscount / 100);
+
                         return (
                             <div key={sig.id} className="flex justify-between items-center bg-slate-50 p-3 rounded-lg border border-slate-100">
                                 <div>
                                     <div className="font-semibold text-slate-700">{p?.name}</div>
-                                    <div className="text-xs text-slate-500">
-                                        {price?.duration_label}
+                                    <div className="text-xs text-slate-500 flex items-center gap-1.5 mt-0.5 flex-wrap">
+                                        <span>{price?.duration_label}</span>
                                         {sig.isRenewal && <span className="text-blue-600 font-bold ml-1">(Renovación)</span>}
+                                        {isCombo && (
+                                            <span className="text-emerald-700 font-semibold bg-emerald-100/80 px-2 py-0.5 rounded text-[11px] border border-emerald-200">
+                                                Combo Plan + Firma ({effectiveDiscount}%)
+                                            </span>
+                                        )}
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
                                     <div className="text-right">
                                         <div className="font-bold text-slate-800">
-                                            {formatCurrency(
-                                                ((sig.isRenewal ? (parseFloat(price?.renewal_price) || parseFloat(price?.price)) : parseFloat(price?.price || 0)) * (1 - (sig.discount || 0) / 100)) * sig.quantity
-                                            )}
+                                            {formatCurrency(baseUnit * sig.quantity)}
                                         </div>
                                         <div className="text-xs text-slate-400">Qty: {sig.quantity}</div>
                                     </div>
@@ -186,11 +194,25 @@ export default function SignatureSection({
                                     type="checkbox"
                                     id="renewalCheck"
                                     checked={sigForm.isRenewal}
-                                    onChange={(e) => setSigForm({ ...sigForm, isRenewal: e.target.checked })}
+                                    onChange={(e) => {
+                                        const checked = e.target.checked;
+                                        setSigForm(prev => ({
+                                            ...prev,
+                                            isRenewal: checked,
+                                            discount: (!checked && hasPlan && prev.discount === 5) ? 0 : prev.discount
+                                        }));
+                                    }}
                                     className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                                 />
                                 <label htmlFor="renewalCheck" className="text-slate-700 font-medium select-none cursor-pointer">Renovación de Firma</label>
                             </div>
+
+                            {/* Aviso Combo si aplica */}
+                            {hasPlan && !sigForm.isRenewal && (
+                                <div className="flex items-center gap-2 p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg text-xs font-semibold text-emerald-800">
+                                    <span>🎁 Descuento Combo 5% aplicado por compra junto a un Plan</span>
+                                </div>
+                            )}
 
                             {/* Descuento */}
                             <div>
@@ -200,10 +222,20 @@ export default function SignatureSection({
                                     value={sigForm.discount}
                                     onChange={(e) => setSigForm({ ...sigForm, discount: parseInt(e.target.value) })}
                                 >
-                                    <option value="0">0%</option>
-                                    <option value="5">5%</option>
-                                    <option value="10">10%</option>
-                                    <option value="16">16%</option>
+                                    {hasPlan && !sigForm.isRenewal ? (
+                                        <>
+                                            <option value="0">5% (Descuento Combo Automático)</option>
+                                            <option value="10">10%</option>
+                                            <option value="16">16%</option>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <option value="0">0%</option>
+                                            <option value="5">5%</option>
+                                            <option value="10">10%</option>
+                                            <option value="16">16%</option>
+                                        </>
+                                    )}
                                 </select>
                             </div>
 
@@ -259,6 +291,21 @@ export default function SignatureSection({
                                 }
                                 return null;
                             })()}
+
+                            {/* Subtotal previo de la firma */}
+                            {currentSigPrice && currentSigPrice.base > 0 && (
+                                <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 mt-4 space-y-1">
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="font-semibold text-slate-600">Subtotal Firma:</span>
+                                        <span className="text-lg font-bold text-blue-600">{formatCurrency(currentSigPrice.base * sigForm.quantity)}</span>
+                                    </div>
+                                    {currentSigPrice.isCombo && (
+                                        <div className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
+                                            <span>🎁 Incluye 5% de descuento combo por compra junto a un plan</span>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
 
                         <div className="flex gap-4 mt-8">
