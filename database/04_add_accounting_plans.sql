@@ -36,7 +36,7 @@ BEGIN
             'PLAN CONTABLE ESENCIAL', 
             'Sistema contable completo para pequeños negocios y emprendedores', 
             cat_plan_id, 
-            '{"Comprobantes mes": "1250", "Comprobantes año": "15000", "Límite API REST": "2000 / año", "Empresas": 1, "Establecimientos": 2, "Puntos de Emisión": 5, "Usuarios": 5, "Empleados (Nómina)": 5, "Contabilidad Automática": true, "Estados Financieros": true, "Bancos y Cartera": true, "Inventario": true, "Compras": true, "Nómina": true, "ATS": true, "Soporte": true, "Portal documentación": true}'::jsonb
+            '{"Comprobantes mes": "1250", "Comprobantes año": "15000", "Límite API REST": "2000 / año", "Empresas": 1, "Establecimientos": 2, "Puntos de Emisión": "Ilimitados", "Usuarios": 5, "Empleados (Nómina)": 5, "Contabilidad Automática": true, "Estados Financieros": true, "Bancos y Cartera": true, "Inventario": true, "Compras": true, "Nómina": true, "ATS": true, "Soporte": true, "Portal documentación": true}'::jsonb
         ) RETURNING id INTO prod_id;
 
         IF chan_azur_id IS NOT NULL THEN
@@ -61,7 +61,7 @@ BEGIN
             'PLAN CONTABLE PROFESIONAL', 
             'Comprobantes ilimitados web y mayor capacidad operativa', 
             cat_plan_id, 
-            '{"Comprobantes mes": "Ilimitados", "Comprobantes año": "Ilimitado", "Límite API REST": "4000 / año", "Empresas": 1, "Establecimientos": 2, "Puntos de Emisión": 5, "Usuarios": 5, "Empleados (Nómina)": 25, "Contabilidad Automática": true, "Estados Financieros": true, "Bancos y Cartera": true, "Inventario": true, "Compras": true, "Nómina": true, "ATS": true, "Soporte": true, "Portal documentación": true}'::jsonb
+            '{"Comprobantes mes": "Ilimitados", "Comprobantes año": "Ilimitado", "Límite API REST": "4000 / año", "Empresas": 1, "Establecimientos": 2, "Puntos de Emisión": "Ilimitados", "Usuarios": 5, "Empleados (Nómina)": 25, "Contabilidad Automática": true, "Estados Financieros": true, "Bancos y Cartera": true, "Inventario": true, "Compras": true, "Nómina": true, "ATS": true, "Soporte": true, "Portal documentación": true}'::jsonb
         ) RETURNING id INTO prod_id;
 
         IF chan_azur_id IS NOT NULL THEN
@@ -86,7 +86,7 @@ BEGIN
             'PLAN CONTABLE PREMIUM', 
             'Para empresas en crecimiento con hasta 50 empleados en nómina', 
             cat_plan_id, 
-            '{"Comprobantes mes": "Ilimitados", "Comprobantes año": "Ilimitado", "Límite API REST": "6000 / año", "Empresas": 1, "Establecimientos": 3, "Puntos de Emisión": 10, "Usuarios": 8, "Empleados (Nómina)": 50, "Contabilidad Automática": true, "Estados Financieros": true, "Bancos y Cartera": true, "Inventario": true, "Compras": true, "Nómina": true, "ATS": true, "Soporte": true, "Portal documentación": true}'::jsonb
+            '{"Comprobantes mes": "Ilimitados", "Comprobantes año": "Ilimitado", "Límite API REST": "6000 / año", "Empresas": 1, "Establecimientos": 3, "Puntos de Emisión": "Ilimitados", "Usuarios": 8, "Empleados (Nómina)": 50, "Contabilidad Automática": true, "Estados Financieros": true, "Bancos y Cartera": true, "Inventario": true, "Compras": true, "Nómina": true, "ATS": true, "Soporte": true, "Portal documentación": true}'::jsonb
         ) RETURNING id INTO prod_id;
 
         IF chan_azur_id IS NOT NULL THEN
@@ -111,7 +111,7 @@ BEGIN
             'PLAN CONTABLE CORPORATIVO', 
             'Máxima capacidad para corporaciones y hasta 100 empleados en nómina', 
             cat_plan_id, 
-            '{"Comprobantes mes": "Ilimitados", "Comprobantes año": "Ilimitado", "Límite API REST": "8000 / año", "Empresas": 1, "Establecimientos": 4, "Puntos de Emisión": 12, "Usuarios": 10, "Empleados (Nómina)": 100, "Contabilidad Automática": true, "Estados Financieros": true, "Bancos y Cartera": true, "Inventario": true, "Compras": true, "Nómina": true, "ATS": true, "Soporte": true, "Portal documentación": true}'::jsonb
+            '{"Comprobantes mes": "Ilimitados", "Comprobantes año": "Ilimitado", "Límite API REST": "8000 / año", "Empresas": 1, "Establecimientos": 4, "Puntos de Emisión": "Ilimitados", "Usuarios": 10, "Empleados (Nómina)": 100, "Contabilidad Automática": true, "Estados Financieros": true, "Bancos y Cartera": true, "Inventario": true, "Compras": true, "Nómina": true, "ATS": true, "Soporte": true, "Portal documentación": true}'::jsonb
         ) RETURNING id INTO prod_id;
 
         IF chan_azur_id IS NOT NULL THEN

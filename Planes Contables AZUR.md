@@ -19,10 +19,10 @@ Independientemente del plan contable elegido, todos incluyen exactamente las mis
 
 | Plan | 1 mes | 3 meses *(1% desc)* | 6 meses *(6% desc)* | 1 año *(10% desc)* | Comprobantes (Web) | Límite API REST | Empleados (Nómina) | Establecimientos | Ptos. Emisión | Usuarios |
 | :---- | :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: |
-| **Esencial** | **$25.00** | **$74.25** | **$141.00** | **$270.00** | 1,250 / mes | Hasta 2,000 / año | 5 | 2 | 5 | 5 |
-| **Profesional** | **$35.00** | **$101.85** | **$197.40** | **$378.00** | Ilimitados | Hasta 4,000 / año | 25 | 2 | 5 | 5 |
-| **Premium** | **$45.00** | **$130.95** | **$253.80** | **$486.00** | Ilimitados | Hasta 6,000 / año | 50 | 3 | 10 | 8 |
-| **Corporativo** | **$60.00** | **$174.60** | **$338.40** | **$648.00** | Ilimitados | Hasta 8,000 / año | 100 | 4 | 12 | 10 |
+| **Esencial** | **$25.00** | **$74.25** | **$141.00** | **$270.00** | 1,250 / mes | Hasta 2,000 / año | 5 | 2 | Ilimitados | 5 |
+| **Profesional** | **$35.00** | **$101.85** | **$197.40** | **$378.00** | Ilimitados | Hasta 4,000 / año | 25 | 2 | Ilimitados | 5 |
+| **Premium** | **$45.00** | **$130.95** | **$253.80** | **$486.00** | Ilimitados | Hasta 6,000 / año | 50 | 3 | Ilimitados | 8 |
+| **Corporativo** | **$60.00** | **$174.60** | **$338.40** | **$648.00** | Ilimitados | Hasta 8,000 / año | 100 | 4 | Ilimitados | 10 |
 
 
 ## **Integración por API REST y Comprobantes Ilimitados**

@@ -65,6 +65,7 @@ export default function PlanChange() {
 
         sortedPlans.forEach(p => {
             const feat = { ...(p.features || {}) };
+            feat['Puntos de Emisión'] = 'Ilimitados';
             if (p.name) {
                 const nameUpper = p.name.toUpperCase();
                 if (nameUpper.includes('ILIMITADO') || nameUpper.includes('EXPRESS') || nameUpper.includes('ESPECIAL') || nameUpper.includes('BÁSICO II')) {
